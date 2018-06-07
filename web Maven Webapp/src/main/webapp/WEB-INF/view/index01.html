@@ -1,0 +1,349 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<HTML>
+<HEAD>
+<TITLE>ZTREE DEMO</TITLE>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="css/bootstrap.min.css" />
+<link rel="stylesheet" href="css/myApp.css" />
+<link rel="stylesheet" href="css/bootstrap-treeview.min.css"
+	type="text/css">
+<script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+<script src="js/jquery-ui.min.js"></script>
+<script src="js/Sortable.min.js"></script>
+<script src="js/myTool.js"></script>
+<script src="js/layer/layer.js"></script>
+<script type="text/javascript" src="js/bootstrap-treeview.min.js"></script>
+<SCRIPT type="text/javascript">
+	var zTree;
+	var demoIframe;
+	var selectArray = new Array();
+	var optionString = '<select><option value=" > "> > </option><option value=" >= "> >= </option><option value=" = "> = </option>'
+		+ '<option value=" < "> < </option><option value=" <= "> <= </option><option value=" IN "> IN </option><option value=" NOT IN "> NOT IN </option><option value=" LIKE "> LIKE </option></select>';
+	var optionBefore = '<select><option value="">  </option><option value=" ( "> ( </option></select>';
+	var optionAfter = '<select><option value="">  </option><option value=" ) "> ) </option></select>';
+	var optionRela = '<select><option value="">  </option><option value=" AND "> AND </option><option value=" OR "> OR </option></select>';
+	var deleteButton = '<input type=\'button\' value=\'删除当前行\' onClick=\'deleteCurrentRow(this)\' />';
+	var whereConditionSQL = '';
+	var havingConditionSQL = '';
+	var groupClauseSQL = '';
+	var groupMode = 'N';
+	var setting = {
+		view : {
+			dblClickExpand : false,
+			showLine : true,
+			selectedMulti : false
+		},
+		async : {
+			enable : true,
+			url : "getSjyByExample",
+			autoParam : [ "zdbm", "sjybm", "zdmc" ],
+			dataFilter : filter
+		},
+		data : {
+			key : {
+				name : "zdmc",
+				isParent : "pnode",
+			},
+			simpleData : {
+				enable : true,
+				idKey : "zdbm",
+				pIdKey : "sjybm",
+				rootPId : "000",
+			}
+		},
+		callback : {
+			onDblClick : function(event, treeId, treeNode) {
+				var zTree = $.fn.zTree.getZTreeObj("tree");
+				if (treeNode.isParent) {
+					zTree.expandNode(treeNode);
+					return false;
+				} else {
+					// 已经添加过的元素不允许重复加入
+					if (selectArray.indexOf(treeNode.ybzd) == -1) {
+						selectArray.push(treeNode.ybzd);
+						let newNode = $('<div jhbz="' + treeNode.jhbz + '" zdmc="' + treeNode.zdmc + '" zdbm="' + treeNode.zdbm + '" ybzd="' + treeNode.ybzd + '" ybmc="' + treeNode.ybmc + '" sjlx="' + treeNode.sjlx + '" ondblclick="deleteSelectNode(this)" class="column">' + treeNode.zdmc + '</div>');
+						$('#demo').append(newNode);
+						return true;
+					} else {
+						layer.alert('该字段已添加到字段列表', {
+							icon : 6,
+							title : '温馨提示'
+						});
+						return false;
+					}
+				}
+			}
+		}
+	};
+
+	$(document).ready(function() {
+		$.ajax({
+			url : 'getSjyByExample',
+			type : 'POST', //GET
+			async : true, //或false,是否异步
+			data : {
+				zdbm : '000',
+			},
+			timeout : 5000, //超时时间
+			dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
+			success : function(data, textStatus, jqXHR) {
+				//var result = jQuery.parseJSON(data);
+				$('#tree').treeview({
+					data : "[" + JSON.stringify(data) + "]",
+					levels : 5,
+					onNodeSelected : function(event, data) {
+						if (data.ybzd == null) {
+							return;
+						}
+						// 已经添加过的元素不允许重复加入
+						if (selectArray.indexOf(data.ybzd) == -1) {
+							selectArray.push(data.ybzd);
+							let newNode = $('<div jhbz="' + data.jhbz + '" zdmc="' + data.zdmc + '" zdbm="' + data.zdbm + '" ybzd="' + data.ybzd + '" ybmc="' + data.ybmc + '" sjlx="' + data.sjlx + '" ondblclick="deleteSelectNode(this)" class="column">' + data.zdmc + '</div>');
+							$('#demo').append(newNode);
+							return true;
+						} else {
+							layer.alert('该字段已添加到字段列表', {
+								icon : 6,
+								title : '温馨提示'
+							});
+							return false;
+						}
+					},
+				});
+			},
+			error : function(xhr, textStatus) {
+				console.log('错误')
+				console.log(xhr)
+				console.log(textStatus)
+			},
+			complete : function() {
+				//console.log('Ajax处理结束');
+			}
+		});
+
+
+		//---加入Sortable
+		var options = {
+			group : 'share',
+			animation : 100
+		// filter : '.js-remove',
+		// 删除选中字段处理
+		//onFilter : function(evt) {
+		//	console.log('filter..');
+		//	console.log($(evt.item).attr("zdbm"));
+		//}
+		};
+
+		/* events = [
+			'onChoose',
+			'onStart',
+			'onEnd',
+			'onAdd',
+			'onUpdate',
+			'onSort',
+			'onRemove'
+		].forEach(function(name) {
+			options[name] = function(evt) {
+				console.log({
+					'event' : name,
+					'this' : this,
+					'item' : evt.item,
+					'from' : evt.from,
+					'to' : evt.to.id,
+					'oldIndex' : evt.oldIndex,
+					'newIndex' : evt.newIndex
+				});
+			};
+		}); */
+		Sortable.create(demo, options);
+	});
+
+	// 提交查询处理按钮点击事件
+	function goSearch() {
+		whereConditionSQL = '';
+		groupClauseSQL = '';
+		havingConditionSQL = '';
+		// 是否需要进行分组处理标志
+		groupMode = 'N';
+		let list = $('#demo').children();
+		// console.log('list.size:' + list.length);
+		// 参数对象封装
+		let paramsObject = new Object();
+		let selectTables = new Array();
+		list.each(function(id, value) {
+			let obj = new Object();
+			obj.zdbm = $(value).attr('zdbm');
+			obj.ybmc = $(value).attr('ybmc');
+			obj.ybzd = $(value).attr('ybzd');
+			obj.sjlx = $(value).attr('sjlx');
+			selectTables.push(obj);
+			// 拼装GroupBy条件的字段内容
+			if ($(value).attr('jhbz') == 'N') {
+				groupClauseSQL += $(value).attr('ybzd') + ',';
+			} else {
+				groupMode = 'Y';
+			}
+		});
+		// 去掉最后多余的逗号
+		groupClauseSQL = groupClauseSQL.substring(0, groupClauseSQL.length - 1);
+		// console.log(selectTables);
+		// 处理Where条件，将结果装载到whereConditionSQL
+		dealWhereClause();
+		//console.log("havingConditionSQL:" + havingConditionSQL);
+		//console.log("groupMode:" + groupMode);
+		paramsObject.selectTables = selectTables;
+		paramsObject.whereClause = whereConditionSQL;
+		paramsObject.havingClause = havingConditionSQL;
+		paramsObject.groupClause = groupClauseSQL;
+		paramsObject.groupFlag = groupMode;
+		$.ajax({
+			url : 'dealSelectedSQL',
+			type : 'POST', //GET
+			contentType : 'application/json',
+			async : true, //或false,是否异步
+			data : JSON.stringify(paramsObject),
+			timeout : 5000, //超时时间
+			dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
+			success : function(data, textStatus, jqXHR) {
+				console.log(data);
+			/* var result = jQuery.parseJSON(data); */
+			},
+			error : function(xhr, textStatus) {
+				console.log('错误')
+				console.log(xhr)
+				console.log(textStatus)
+			},
+			complete : function() {
+				console.log('Ajax处理结束')
+			}
+		});
+	}
+
+	function deleteSelectNode(value) {
+		let mapValue = $(value).attr("ybzd");
+		// 从队列中删除已取消的字段
+		selectArray.remove(mapValue);
+		// 从DOM中删除对应字段内容
+		value.remove();
+	}
+
+	function filter(treeId, parentNode, childNodes) {
+		if (!childNodes) return null;
+		/* for (var i = 0, l = childNodes.length; i < l; i++) {
+			console.log(childNodes[i]);
+		} */
+		return jQuery.parseJSON(childNodes);
+	}
+
+	// 添加Where条件选择行
+	function addWhereClause() {
+		let whereClause = $('#whereArea');
+		let innerHTML = '<div class="whereClauseColumn">';
+		let list = $('#demo').children();
+		let temp = optionBefore + '<select>';
+		list.each(function(id, value) {
+			temp += "<option value='" + $(value).attr('ybzd') + '.' + $(value).attr('jhbz') + '.' + $(value).attr('sjlx') + "'>" + $(value).attr('zdmc') + '</option>';
+		});
+		innerHTML += temp + '</select>' + optionString;
+		let tempValue = "<input type=text />" + optionAfter + optionRela + deleteButton;
+		innerHTML += tempValue + '</div>';
+		whereClause.append(innerHTML);
+	}
+
+	// 对SQL语句的Where和Having条件进行处理
+	function dealWhereClause() {
+		let list = $('#whereArea').children();
+		// 遍历筛选区域的所有DOM，并提取相关属性
+		list.each(function(id, value) {
+			//console.log(value);
+			let columnType = '',
+				columnName = '',
+				jhbz = '',
+				swapString = '';
+			$(value).children().each(function(id, value) {
+				// 字段名称特殊处理
+				if (id == 1) {
+					// 获取字段名称
+					columnName = $(value).val().substr(0, $(value).val().length - 4);
+					// 获取字段类型，主要用于拼装SQL时对不同类型的字段进行处理[C:字符,N:数字,T:时间]
+					columnType = $(value).val().substr($(value).val().length - 1, 1);
+					// 聚合标志，判断该字段是否属于聚合类型的字段
+					jhbz = $(value).val().substr($(value).val().length - 3, 1);
+					//console.log("jhbz:" + jhbz);
+					//whereConditionSQL += columnName;
+					swapString = columnName;
+				} else if (id == 3) {
+					if( (columnType == 'C' || columnType == 'T') ) {
+						// whereConditionSQL = whereConditionSQL + '\'' + $(value).val() + '\'';
+						swapString = swapString + '\'' + $(value).val() + '\'';
+					} else {
+						//whereConditionSQL += $(value).val();
+						swapString += $(value).val();
+					}
+				} else if (id != 6) {
+					// whereConditionSQL += $(value).val();
+					swapString += $(value).val();
+				}
+			}
+			);
+			// 根据当前条件是否为聚合字段，选择放入到Where部分还是Having部分
+			if (jhbz != 'Y') {
+				whereConditionSQL += swapString;
+			} else {
+				groupMode = 'Y';
+				console.log('聚合字段:' + columnName);
+				havingConditionSQL += swapString;
+			}
+		});
+		//----处理多余的AND 和 OR
+		let abc = whereConditionSQL.lastIndexOf(" ");
+		var lengthIndex = whereConditionSQL.length - 1;
+		//console.log("abc:" + abc + "，length:" + length);
+		if (abc == lengthIndex) {
+			whereConditionSQL = whereConditionSQL.substring(0, whereConditionSQL.length - 4);
+		}
+		abc = havingConditionSQL.lastIndexOf(" ");
+		lengthIndex = havingConditionSQL.length - 1;
+		//console.log("abc:" + abc + "，length:" + length);
+		if (abc == lengthIndex) {
+			havingConditionSQL = havingConditionSQL.substring(0, havingConditionSQL.length - 4);
+		}
+	//console.log('whereConditionSQL:' + whereConditionSQL);
+	//console.log('havingConditionSQL:' + havingConditionSQL);
+	}
+
+	// 删除当前行的筛选条件
+	function deleteCurrentRow(value) {
+		//console.log($(value));
+		//console.log($(value).parent());
+		$(value).parent().remove();
+	}
+</SCRIPT>
+</HEAD>
+
+<BODY>
+	<div class="container">
+		<div class="left">
+			<ul id="tree" class="ztree" style="width:260px; overflow:auto;"></ul>
+		</div>
+		<div class="right">
+			<div>已选择查询字段列表：</div>
+			<div id="demo" class="selectColumns"></div>
+			<HR align=center width=100% color=#987cb9 SIZE=1>
+			<div class="whereCondition">
+				<div class="title">
+					筛选因素设置：<input type=button value="添加" class='btn btn-sm'
+						onclick="addWhereClause()" />
+				</div>
+				<div class="whereArea" id="whereArea"></div>
+			</div>
+			<div class="searchButton">
+				<input type='button' value='提交查询' onClick='goSearch()'
+					class='btn btn-sm'>
+				<!-- <input type='button' value='获取Where条件'
+					onClick='dealWhereClause()' class='btn btn-sm'> -->
+			</div>
+		</div>
+	</div>
+</BODY>
+</HTML>

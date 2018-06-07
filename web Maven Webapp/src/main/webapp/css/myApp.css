@@ -1,0 +1,16 @@
+.searchColumn {
+	height: 60px;
+}
+
+.ui-sortable {
+	margin: 0px;
+	padding: 0px;
+}
+
+.whereConditionPanel{
+	height: 150px;
+}
+
+.resultPanel{
+	height: auto;
+}

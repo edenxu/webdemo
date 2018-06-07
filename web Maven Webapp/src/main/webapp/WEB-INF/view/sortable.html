@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>sortable.html</title>
+
+<meta name="keywords" content="keyword1,keyword2,keyword3">
+<meta name="description" content="this is my page">
+<meta name="content-type" content="text/html; charset=UTF-8">
+
+<link rel="stylesheet" href="css/bootstrap.min.css" />
+<style type="text/css">
+body {
+	padding: 20px;
+}
+
+.list-group-item {
+	cursor: move;
+	cursor: -webkit-grabbing;
+}
+
+.my-handle {
+	cursor: move;
+	cursor: -webkit-grabbing;
+}
+
+.grid .item {
+  padding: 10px;
+  float: left;
+}
+
+.grid .item img {
+  cursor: move;
+  cursor: -webkit-grabbing;
+}
+
+.sortable-fallback img{
+  border-radius: 50%;
+}
+</style>
+</head>
+<body>
+	<button id="switcher">disable</button>
+	<br />
+	<br />
+
+	<ul id="list" class="list-group">
+		<li class="list-group-item">This is <a
+			href="http://rubaxa.github.io/Sortable/">Sortable</a></li>
+		<li class="list-group-item">It works with Bootstrap...</li>
+		<li class="list-group-item">...out of the box.</li>
+		<li class="list-group-item">It has support for touch devices.</li>
+		<li class="list-group-item">Just drag some elements around.</li>
+	</ul>
+
+	<ul id='handle'>
+		<li><span class="my-handle">::</span> list item text one
+		<li><span class="my-handle">::</span> list item text two
+	</ul>
+
+	<div id="sortable" class="grid">
+		<div class="item">
+			<img
+				src="https://static.bootcss.com/www/assets/img/react.png?1525413231872"
+				alt="">
+		</div>
+		<div class="item">
+			<img
+				src="https://static.bootcss.com/www/assets/img/react.png?1525413231872"
+				alt="">
+		</div>
+		<div class="item">
+			<img
+				src="https://static.bootcss.com/www/assets/img/react.png?1525413231872"
+				alt="">
+		</div>
+		<div class="item">
+			<img
+				src="https://static.bootcss.com/www/assets/img/react.png?1525413231872"
+				alt="">
+		</div>
+	</div>
+
+	<script src="js/jquery-3.3.1.min.js"></script>
+	<script src="js/jquery-ui.min.js"></script>
+	<script src="js/Sortable.min.js"></script>
+	<script type="text/javascript">
+		$(function() {
+			var sortable = Sortable.create(list);
+	
+			switcher.onclick = function() {
+				var state = sortable.option("disabled"); // get
+	
+				sortable.option("disabled", !state); // set
+	
+				switcher.innerHTML = state ? 'disable' : 'enable';
+			};
+	
+			var el = document.getElementById('handle');
+			Sortable.create(el, {
+				handle : ".my-handle"
+			});
+			
+			var sortable = document.getElementById('sortable');
+			Sortable.create(sortable, {
+				forceFallback : true
+			});
+		})
+	</script>
+</body>
+</html>

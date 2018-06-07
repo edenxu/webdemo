@@ -1,0 +1,314 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<HTML>
+<HEAD>
+<TITLE>ZTREE DEMO</TITLE>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="css/zTreeStyle/zTreeStyle.css"
+	type="text/css">
+<link rel="stylesheet" href="css/bootstrap.min.css" />
+<link rel="stylesheet" href="css/myApp.css" />
+<script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="js/zTree/jquery.ztree.core.js"></script>
+<script src="js/jquery-ui.min.js"></script>
+<script src="js/Sortable.min.js"></script>
+<script src="js/myTool.js"></script>
+<script src="js/layer/layer.js"></script>
+<SCRIPT type="text/javascript">
+	$.ajax({
+		url : 'getSjyByExample',
+		type : 'POST', //GET
+		async : true, //或false,是否异步
+		data : {
+			pid : '001',
+		},
+		timeout : 5000, //超时时间
+		dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
+		success : function(data, textStatus, jqXHR) {
+			var result = jQuery.parseJSON(data);
+			console.log(result)
+			console.log(textStatus)
+			console.log(jqXHR)
+		},
+		error : function(xhr, textStatus) {
+			console.log('错误')
+			console.log(xhr)
+			console.log(textStatus)
+		},
+		complete : function() {
+			console.log('结束')
+		}
+	});
+
+	var zTree;
+	var demoIframe;
+	var selectArray = new Array();
+	var setting = {
+		view : {
+			dblClickExpand : false,
+			showLine : true,
+			selectedMulti : false
+		},
+		data : {
+			simpleData : {
+				enable : true,
+				idKey : "id",
+				pIdKey : "pId",
+				rootPId : ""
+			}
+		},
+		callback : {
+			onDblClick : function(event, treeId, treeNode) {
+				var zTree = $.fn.zTree.getZTreeObj("tree");
+				if (treeNode.isParent) {
+					zTree.expandNode(treeNode);
+					return false;
+				} else {
+					// 已经添加过的元素不允许重复加入
+					if (selectArray.indexOf(treeNode.mapValue) == -1) {
+						selectArray.push(treeNode.mapValue);
+						let newNode = $('<div mapValue="' + treeNode.mapValue + '" ondblclick="deleteSelectNode(this)" class="column">' + treeNode.name + '</div>');
+						$('#demo').append(newNode);
+						//console.log(treeNode.mapValue);
+						return true;
+					} else {
+						layer.alert('该字段已添加到字段列表', {
+							icon : 6,
+							title : '温馨提示'
+						});
+						return false;
+					}
+				}
+			}
+		}
+	};
+
+	var zNodes = [
+		{
+			id : 1,
+			pId : 0,
+			name : "客户基本档案",
+			open : true
+		},
+		{
+			id : 101,
+			pId : 1,
+			name : "用户编号",
+			mapValue : "YXSCDB.KH_YDKH.YHBH"
+		},
+		{
+			id : 102,
+			pId : 1,
+			name : "用户名称",
+			mapValue : "YXSCDB.KH_YDKH.YHMC"
+		},
+		{
+			id : 103,
+			pId : 1,
+			name : "用电地址",
+			mapValue : "YXSCDB.KH_YDKH.YHDZ"
+		},
+		{
+			id : 104,
+			pId : 1,
+			name : "联系人",
+			mapValue : "YXSCDB.KH_YDKH.LXR"
+		},
+		{
+			id : 105,
+			pId : 1,
+			name : "联系电话",
+			mapValue : "YXSCDB.KH_YDKH.LXDH"
+		},
+		{
+			id : 106,
+			pId : 1,
+			name : "用电容量",
+			mapValue : "YXSCDB.KH_YDKH.YDRL"
+		},
+		{
+			id : 107,
+			pId : 1,
+			name : "用户类别",
+			mapValue : "YXSCDB.KH_YDKH.YHLB"
+		},
+		{
+			id : 115,
+			pId : 1,
+			name : "电压等级",
+			mapValue : "YXSCDB.KH_YDKH.DYDJ"
+		},
+		{
+			id : 108,
+			pId : 1,
+			name : "营业区域",
+			mapValue : "YXSCDB.KH_YDKH.YYQY"
+		},
+		{
+			id : 109,
+			pId : 1,
+			name : "抄表区段号",
+			mapValue : "YXSCDB.KH_YDKH.CBQD"
+		},
+		{
+			id : 110,
+			pId : 1,
+			name : "抄表方式",
+			mapValue : "YXSCDB.KH_YDKH.CBFS"
+		},
+		{
+			id : 111,
+			pId : 1,
+			name : "抄表周期",
+			mapValue : "YXSCDB.KH_YDKH.CBZQ"
+		},
+		{
+			id : 2,
+			pId : 0,
+			name : "电量电费档案",
+			open : false
+		},
+		{
+			id : 201,
+			pId : 2,
+			name : "客户编号",
+			mapValue : "YXSCDB.ZW_YSDFMX.KHBH"
+		},
+		{
+			id : 206,
+			pId : 2,
+			name : "电费年月",
+			mapValue : "YXSCDB.ZW_YSDFMX.DFNY"
+		},
+		{
+			id : 207,
+			pId : 2,
+			name : "计量点编号",
+			mapValue : "YXSCDB.ZW_YSDFMX.JLDBH"
+		},
+		{
+			id : 208,
+			pId : 2,
+			name : "电价代码",
+			mapValue : "YXSCDB.ZW_YSDFMX.DJDM"
+		},
+		{
+			id : 202,
+			pId : 2,
+			name : "电量",
+			mapValue : "YXSCDB.ZW_YSDFMX.DL"
+		},
+		{
+			id : 203,
+			pId : 2,
+			name : "电费",
+			mapValue : "YXSCDB.ZW_YSDFMX.DF"
+		}
+	];
+
+	$(document).ready(function() {
+		var t = $("#tree");
+		t = $.fn.zTree.init(t, setting, zNodes);
+		/* 		demoIframe = $("#testIframe");
+				demoIframe.bind("load", loadReady); */
+		var zTree = $.fn.zTree.getZTreeObj("tree");
+		zTree.selectNode(zTree.getNodeByParam("id", 101));
+
+		//---加入Sortable
+		var options = {
+			group : 'share',
+			animation : 100,
+			filter : '.js-remove',
+			// 删除选中字段处理
+			onFilter : function(evt) {
+				console.log('filter..');
+				console.log($(evt.item).attr("mapValue"));
+			}
+		};
+
+		events = [
+			'onChoose',
+			'onStart',
+			'onEnd',
+			'onAdd',
+			'onUpdate',
+			'onSort',
+			'onRemove'
+		].forEach(function(name) {
+			options[name] = function(evt) {
+				/* console.log({
+					'event' : name,
+					'this' : this,
+					'item' : evt.item,
+					'from' : evt.from,
+					'to' : evt.to.id,
+					'oldIndex' : evt.oldIndex,
+					'newIndex' : evt.newIndex
+				}); */
+			};
+		});
+		Sortable.create(demo, options);
+	});
+
+	function loadReady() {
+		var bodyH = demoIframe.contents().find("body").get(0).scrollHeight,
+			htmlH = demoIframe.contents().find("html").get(0).scrollHeight,
+			maxH = Math.max(bodyH, htmlH),
+			minH = Math.min(bodyH, htmlH),
+			h = demoIframe.height() >= maxH ? minH : maxH;
+		if (h < 530)
+			h = 530;
+		demoIframe.height(h);
+	}
+
+	function goSearch() {
+		var list = $('#demo').children();
+		list.each(function(id, value) {
+			console.log(id + ':' + value.innerText);
+			console.log(id + ':' + $(value).attr('mapValue'));
+		});
+	}
+
+	function deleteSelectNode(value) {
+		let mapValue = $(value).attr("mapValue");
+		// 从队列中删除已取消的字段
+		selectArray.remove(mapValue);
+		value.remove();
+	}
+</SCRIPT>
+</HEAD>
+
+<BODY>
+	<div class="container">
+		<div class="left">
+			<ul id="tree" class="ztree" style="width:260px; overflow:auto;"></ul>
+		</div>
+		<div class="right">
+			<div>已选择查询字段列表：</div>
+			<div id="demo" class="selectColumns table"></div>
+			<div class="searchButton">
+				<input type='button' value='提交查询' onClick='goSearch()'
+					class='btn btn-default'>
+			</div>
+			<HR align=center width=100% color=#987cb9 SIZE=1>
+			<div class="whereCondition">
+				<div class="title">数据筛选条件：</div>
+			</div>
+		</div>
+	</div>
+	<!-- <TABLE border=0 height=600px align=left>
+		<TR>
+			<TD width=260px align=left valign=top
+				style="BORDER-RIGHT: #999999 1px dashed">
+				<ul id="tree" class="ztree" style="width:260px; overflow:auto;"></ul>
+			</TD>
+			<TD align=left valign=top>
+				<div>已选择查询字段列表：</div>
+				<div id="demo"></div>
+				<div>
+					<input type='button' value='提交查询' onClick='goSearch()'>
+				</div>
+			</TD>
+		</TR>
+	</TABLE> -->
+</BODY>
+</HTML>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ortable: `put: []` demo</title>
+<link rel="stylesheet" href="css/bootstrap.min.css" />
+<link rel="stylesheet" href="st/app.css" />
+
+<!-- AngularJS -->
+<script src="js/angular.min.js"></script>
+
+<script src="js/jquery-3.3.1.min.js"></script>
+<script src="js/jquery-ui.min.js"></script>
+<script src="js/Sortable.min.js"></script>
+<style type="text/css">
+ul {
+	list-style: none;
+	padding: 0;
+}
+
+li {
+	background: #eee;
+	margin: 1px;
+	padding: 5px 10px;
+}
+
+.sortable-ghost {
+	opacity: .6;
+}
+</style>
+
+</head>
+<body>
+
+	<div data-force="30" class="layer block"
+		style="left: 14.5%; top: 0; width: 37%">
+		<div class="layer title">List A</div>
+		<ul id="foo" class="block__list block__list_words">
+			<li>foo 1</li>
+			<li>foo 2</li>
+			<li>foo 3</li>
+		</ul>
+	</div>
+	<div data-force="18" class="layer block"
+		style="left: 58%; top: 143px; width: 40%;">
+		<div class="layer title">List B</div>
+		<ul id="bar" class="block__list block__list_words">
+			<li>bar 1</li>
+			<li>bar 2</li>
+			<li>bar 3</li>
+		</ul>
+	</div>
+	<div data-force="18" class="layer block"
+		style="left: 14.5%; top: 243px; width: 37%;">
+		<div class="layer title">List C</div>
+		<ul id="abc" class="block__list block__list_words">
+		</ul>
+	</div>
+
+	<script type="text/javascript">
+		var options = {
+			group : 'share',
+			animation : 100,
+			filter : '.js-remove',
+			onFilter : function(evt) {
+				var el = editableList.closest(evt.item); // get dragged item
+				el && el.parentNode.removeChild(el);
+			}
+		};
+	
+		events = [
+			'onChoose',
+			'onStart',
+			'onEnd',
+			'onAdd',
+			'onUpdate',
+			'onSort',
+			'onRemove'
+		].forEach(function(name) {
+			options[name] = function(evt) {
+				console.log({
+					'event' : name,
+					'this' : this,
+					'item' : evt.item,
+					'from' : evt.from,
+					'to' : evt.to.id,
+					'oldIndex' : evt.oldIndex,
+					'newIndex' : evt.newIndex
+				});
+			};
+		});
+	
+		Sortable.create(foo, options);
+		Sortable.create(bar, options);
+		Sortable.create(abc, options);
+	</script>
+</body>
+</html>
