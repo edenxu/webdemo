@@ -108,6 +108,7 @@ public class DemoServiceImpl implements IDemoService {
 		StringBuffer sb = new StringBuffer();
 		// 获取读取字段所涉及的相关数据表【经过去重处理】
 		String[] tableArray = CommonUtil.TableListDuplicateRemoval(object.getSelectTables());
+		log.info("tableArray:" + new Gson().toJson(tableArray));
 		// 获取需要查询的字段内容
 		selectColumns = CommonUtil.pickUpSelectedColumns(object.getSelectTables());
 		selectColumns = selectColumns.substring(0, selectColumns.length() - 1);
@@ -182,8 +183,8 @@ public class DemoServiceImpl implements IDemoService {
 			String orderByColumn, String orderByMode, String limit, String offset) {
 		Map<String, Object> map = new HashMap<String, Object>();
 		long rowcount = greenplumCommonDAOImpl.getTableRowcountByCondition(tableName, condition);
-		List<Map<String, Object>> list = greenplumCommonDAOImpl.getTableDataByCondition(tableName, columns, condition,
-				orderByColumn, orderByMode, limit, offset);
+		List<Map<String, Object>> list = greenplumCommonDAOImpl.getTableDataByConditionTransforColumns(tableName,
+				columns, condition, orderByColumn, orderByMode, limit, offset);
 		map.put("total", rowcount);
 		map.put("rows", list);
 		return map;
@@ -201,7 +202,7 @@ public class DemoServiceImpl implements IDemoService {
 		StringBuffer sb = new StringBuffer();
 		// 如果只涉及一张表，直接返回
 		if (tablesArray.length == 1) {
-			return sb.toString();
+			return sb.append(" FROM ").append(tablesArray[0]).toString();
 		}
 		// 获取所有数据表的网络连通图
 		HashMap<String, HashMap<String, Integer>> stepLength = new HashMap<String, HashMap<String, Integer>>();
@@ -211,8 +212,8 @@ public class DemoServiceImpl implements IDemoService {
 		String[] roadArray = new String[road.size()];
 		boolean firstFlag = true;
 		road.toArray(roadArray);
-		// 获取SQL语句中From后面的所涉及数据表信息
-		String tablesNameList = Arrays.toString(roadArray);
+		// 将关系图中的线路节点进行去重处理后，作为SQL语句中FROM子句的数据表来源
+		String tablesNameList = Arrays.toString(CommonUtil.StringArrayDuplicateRemoval(roadArray));
 		tablesNameList = tablesNameList.substring(1, tablesNameList.length() - 1);
 		sb.append(" FROM ").append(tablesNameList).append(" WHERE ");
 		int size = roadArray.length;

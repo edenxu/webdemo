@@ -573,7 +573,6 @@
 				//timeout : 5000, //超时时间
 				dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
 				success : function(data, textStatus, jqXHR) {
-					console.log(data);
 					var columns = data.columns;
 					columsArray = [];
 					// 给表头字段添加辅助属性
@@ -614,7 +613,7 @@
 						toolbar : "#toolbar", //指定工具栏
 						toolbarAlign : "right", //工具栏对齐方式
 						columns : columsArray,
-						onLoadSuccess : function() {
+						onLoadSuccess : function(data) {
 							// 关闭加载层
 							layer.closeAll('loading');
 							// 恢复统计按钮状态
@@ -629,9 +628,11 @@
 					});
 				},
 				error : function(xhr, textStatus) {
+					// 关闭加载层
+					layer.closeAll('loading');
+					$("#searchButton").attr("disabled", false);
 					console.log('错误')
 					console.log(xhr)
-					console.log(textStatus)
 				},
 				complete : function() {
 					// console.log('Ajax处理结束')
@@ -648,7 +649,6 @@
 			}
 			let whereClause = $('#whereArea');
 			let innerHTML = '<div class="whereClauseColumn form-inline">';
-	
 			let temp = optionBefore + '<select class="form-control" onChange="refreshInputDataType(this)" ><option value="none">-----选择字段-----</option>';
 			list.each(function(id, value) {
 				temp += "<option value='" + $(value).attr('ybzd') + "." + $(value).attr('jhbz') + "." + $(value).attr('sjlx') + "' zdbm='" + $(value).attr('zdbm') + "'>" + $(value).attr('zdmc') + "</option>";
@@ -683,7 +683,7 @@
 						//whereConditionSQL += columnName;
 						swapString = columnName;
 					} else if (id == 3) {
-						let tzbz = $(value).find("option:selected").attr("tzbz");
+						let tzbz = (typeof($(value).find("option:selected").attr("tzbz")) == 'undefined') ? "N" : $(value).find("option:selected").attr("tzbz");
 						// 拓展下拉字段需特殊处理
 						if (tzbz == 'N') {
 							if( (columnType == 'C' || columnType == 'T') ) {
@@ -785,8 +785,6 @@
 						}
 						selectOption += optionString + '</select>';
 						if (tzFlag == 'Y') {
-							console.log('该字段进行了拓展');
-							console.log(newOptionValue);
 							// 将Option中的Value换成拓展以后的值
 							let oldOptionValue = $(value).find("option:selected").attr("value");
 							newOptionValue += oldOptionValue.substring(oldOptionValue.length - 4);
