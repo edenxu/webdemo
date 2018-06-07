@@ -41,7 +41,7 @@ public class CommonUtil {
 	public static String pickUpSelectedColumns(List<XtpzSjzd> list) {
 		int j = list.size();
 		StringBuffer sb = new StringBuffer();
-		sb.append("SELECT ");
+		sb.append("SELECT DISTINCT ");
 		for (int i = 0; i < j; i++) {
 			/** 源表字段非空的情况下才放到SELECT字段列表，因为部分因Where条件拓展引入的数据表只有表名称、无字段，并且是不需要字段展示的，需要排除掉 */
 			if (null != list.get(i).getYbzd() && !"".equals(list.get(i).getYbzd())) {
