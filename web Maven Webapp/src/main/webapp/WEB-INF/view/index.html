@@ -367,6 +367,8 @@
 		var table = "";
 		// 当前数据集表头信息
 		var columsArray = new Array();
+		// 本次查询所涉及的数据表清单
+		var selectTables = new Array();
 	
 		//侧边栏菜单树内容查找
 		var findSelectableNodes = function() {
@@ -529,7 +531,7 @@
 			}
 			// 参数对象封装
 			let paramsObject = new Object();
-			let selectTables = new Array();
+			selectTables = new Array();
 			list.each(function(id, value) {
 				let obj = new Object();
 				obj.zdbm = $(value).attr('zdbm');
@@ -557,9 +559,7 @@
 			paramsObject.havingClause = havingConditionSQL;
 			paramsObject.groupClause = groupClauseSQL;
 			paramsObject.groupFlag = groupMode;
-	
 			console.log(paramsObject);
-			return;
 			// 展示加载层
 			layer.load();
 			// 屏蔽查询按钮
@@ -684,7 +684,6 @@
 						swapString = columnName;
 					} else if (id == 3) {
 						let tzbz = $(value).find("option:selected").attr("tzbz");
-						console.log('tzbz:' + tzbz);
 						// 拓展下拉字段需特殊处理
 						if (tzbz == 'N') {
 							if( (columnType == 'C' || columnType == 'T') ) {
@@ -695,13 +694,18 @@
 								swapString += $(value).val();
 							}
 						} else {
+							// 获取拓展字段需要涉及到的数据表
+							let ybObject = new Object();
+							ybObject.ybmc = $(value).find("option:selected").attr("ybmc");
+							ybObject.ybzd = '';
+							// 将拓展下拉涉及的数据表加入本次查询所涉及的数据表清单
+							selectTables.push(ybObject);
 							//去掉前面的操作符标志位
 							//swapString = swapString.substtring(0,tempString.length - 1)
 							//console.log("最后出现空格的地方：" + swapString.trim().lastIndexOf(' '));
 							swapString = swapString.substring(0, swapString.trim().lastIndexOf(' '));
 							// 因后台返回的数值为01,02,03样式的字符串，所以需要进行分割处理
 							let dropDownValues = $(value).val().split(',');
-							console.log('dropDownValues:' + dropDownValues);
 							let arrayLength = dropDownValues.length;
 							let tempString = ' IN (';
 							for (let i = 0; i < arrayLength; i++) {
@@ -775,14 +779,14 @@
 						let tzFlag = 'N';
 						let newOptionValue = '';
 						for (let i = 0; i < data.result.length; i++) {
-							//console.log(data.result[i]);
 							tzFlag = data.result[i].tzbz;
 							newOptionValue = data.result[i].ybzd;
-							optionString += '<option value="' + data.result[i].sjz + '" tzbz="' + data.result[i].tzbz + '">' + data.result[i].xsz + '</option>';
+							optionString += '<option value="' + data.result[i].sjz + '" tzbz="' + data.result[i].tzbz + '" ybmc="' + data.result[i].ybmc + '">' + data.result[i].xsz + '</option>';
 						}
 						selectOption += optionString + '</select>';
 						if (tzFlag == 'Y') {
-							//console.log('该字段进行了拓展');
+							console.log('该字段进行了拓展');
+							console.log(newOptionValue);
 							// 将Option中的Value换成拓展以后的值
 							let oldOptionValue = $(value).find("option:selected").attr("value");
 							newOptionValue += oldOptionValue.substring(oldOptionValue.length - 4);
