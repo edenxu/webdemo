@@ -1,6 +1,5 @@
 package cn.com.gxbolian.databank.controller;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,8 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
-
-import com.google.gson.Gson;
 
 import cn.com.gxbolian.databank.entity.BootstrapTreeViewEntity;
 import cn.com.gxbolian.databank.entity.ParamsObject;
@@ -121,16 +118,14 @@ public class DemoWebController {
 			RequestMethod.POST })
 	@ResponseBody
 	public Map<String, Object> test(HttpServletRequest request, HttpServletResponse response) {
-		HashMap<String, HashMap<String, Integer>> graph = new HashMap<String, HashMap<String, Integer>>();
-		graph = demoService.getAllConnectedGraphBySjzd();
-		Gson gson = new Gson();
-		log.info("graph:" + gson.toJson(graph));
-		String[] findArray = { "A", "I", "D", "L" };
-		List<String> finalResult = new ArrayList<String>();
-		finalResult = CommonUtil.findOutTheBestRoadForTheArray(findArray, graph);
+		List<Map<String, Object>> head = demoService.getTableColumnNameAndDescription("yxscdb.auto_3933861187291136");
+		List<List<Map<String, Object>>> body = demoService
+				.getDataForBootstrapDataTableToExport("yxscdb.auto_3933861187291136", "", "", "", "", "99999999", "0");
+		String fileName = CommonUtil.exportDataToExcel(head, body);
+		head = null;
+		body = null;
 		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("data", graph);
-		map.put("result", finalResult);
+		map.put("fileName", fileName);
 		return map;
 	}
 

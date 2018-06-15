@@ -185,6 +185,8 @@ public class DemoServiceImpl implements IDemoService {
 		long rowcount = greenplumCommonDAOImpl.getTableRowcountByCondition(tableName, condition);
 		List<Map<String, Object>> list = greenplumCommonDAOImpl.getTableDataByConditionTransforColumns(tableName,
 				columns, condition, orderByColumn, orderByMode, limit, offset);
+//		List<List<Map<String, Object>>> list = greenplumCommonDAOImpl.getTableDataByConditionTransforColumnsSorted(
+//				tableName, columns, condition, orderByColumn, orderByMode, limit, offset);
 		map.put("total", rowcount);
 		map.put("rows", list);
 		return map;
@@ -297,6 +299,14 @@ public class DemoServiceImpl implements IDemoService {
 		example.createCriteria().andZblshEqualTo(xlcstz.getZblsh());
 		example.setOrderByClause(" lsh asc ");
 		return xlcstzDao.selectByExample(example);
+	}
+
+	@Override
+	public List<List<Map<String, Object>>> getDataForBootstrapDataTableToExport(String tableName, String columns,
+			String condition, String orderByColumn, String orderByMode, String limit, String offset) {
+		List<List<Map<String, Object>>> list = greenplumCommonDAOImpl.getTableDataByConditionTransforColumnsSorted(
+				tableName, columns, condition, orderByColumn, orderByMode, limit, offset);
+		return list;
 	}
 
 }
