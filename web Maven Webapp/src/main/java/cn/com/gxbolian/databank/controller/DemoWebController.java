@@ -57,10 +57,6 @@ public class DemoWebController {
 	@ResponseBody
 	public BootstrapTreeViewEntity getSjyByExample(HttpServletRequest request, HttpServletResponse response) {
 		String flbm = request.getParameter("zdbm") == null ? "000" : request.getParameter("zdbm");
-		// return demoService.getNodeInfoForTree(flbm);
-		// Gson gson = new Gson();
-		// return
-		// gson.toJson(demoService.getNodeInfoForBootstrapTreeviewEntity(flbm));
 		return demoService.getNodeInfoForBootstrapTreeviewEntity(flbm);
 	}
 
@@ -114,18 +110,32 @@ public class DemoWebController {
 		return map;
 	}
 
-	@RequestMapping(value = "test", produces = "application/json;charset=utf-8", method = { RequestMethod.GET,
-			RequestMethod.POST })
+	@RequestMapping(value = "exportData", produces = "application/json;charset=utf-8", method = { RequestMethod.POST })
 	@ResponseBody
-	public Map<String, Object> test(HttpServletRequest request, HttpServletResponse response) {
-		List<Map<String, Object>> head = demoService.getTableColumnNameAndDescription("yxscdb.auto_3933861187291136");
-		List<List<Map<String, Object>>> body = demoService
-				.getDataForBootstrapDataTableToExport("yxscdb.auto_3933861187291136", "", "", "", "", "99999999", "0");
+	public Map<String, Object> exportData(HttpServletRequest request, HttpServletResponse response) {
+		String tableName = request.getParameter("tableName") == null ? "" : request.getParameter("tableName");
+		Map<String, Object> map = new HashMap<String, Object>();
+		if ("".equals(tableName)) {
+			map.put("fileName", tableName);
+			return map;
+		}
+		List<Map<String, Object>> head = demoService.getTableColumnNameAndDescription(tableName);
+		List<List<Map<String, Object>>> body = demoService.getDataForBootstrapDataTableToExport(tableName, "", "", "",
+				"", "99999999", "0");
 		String fileName = CommonUtil.exportDataToExcel(head, body);
 		head = null;
 		body = null;
-		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("fileName", fileName);
+		return map;
+	}
+
+	@RequestMapping(value = "drawRelationShip", produces = "application/json;charset=utf-8", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	@ResponseBody
+	public Map<String, Object> drawRelationShip(HttpServletRequest request, HttpServletResponse response) {
+		HashMap<String, HashMap<String, Integer>> relation = demoService.getAllConnectedGraphBySjzd();
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("rela", relation);
 		return map;
 	}
 

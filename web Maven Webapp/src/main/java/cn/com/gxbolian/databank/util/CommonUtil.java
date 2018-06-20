@@ -197,7 +197,7 @@ public class CommonUtil {
 		FileOutputStream outputStream = null;
 		String fileName = UUID.randomUUID().toString().replace("-", "").toLowerCase() + ".xlsx";
 		try {
-			log.info("EXPORT_DIR:" + CommonUtil.EXPORT_DIR);
+			log.debug("EXPORT_DIR:" + CommonUtil.EXPORT_DIR);
 			// 创建文件
 			createDirectoryAndFile(CommonUtil.EXPORT_DIR, fileName);
 			File f = new File(CommonUtil.EXPORT_DIR + fileName);
@@ -225,7 +225,7 @@ public class CommonUtil {
 				e.printStackTrace();
 			}
 		}
-		return CommonUtil.EXPORT_DIR + fileName;
+		return fileName;
 	}
 
 	/**

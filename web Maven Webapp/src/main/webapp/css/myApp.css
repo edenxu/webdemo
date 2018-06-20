@@ -7,10 +7,28 @@
 	padding: 0px;
 }
 
-.whereConditionPanel{
+.whereConditionPanel {
 	height: 150px;
 }
 
-.resultPanel{
+.resultPanel {
 	height: auto;
+}
+
+.panel-heading {
+	display: flex;
+}
+
+.panel-heading-tile {
+	width: 90%;
+	padding: 6px 12px;
+	font-size: 14px;
+}
+
+.btn-export {
+	flex: 1;
+}
+
+.treeview {
+	font-size: 12px;
 }
