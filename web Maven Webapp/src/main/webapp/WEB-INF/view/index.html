@@ -246,7 +246,8 @@
 								</span>
 							</div> <!-- /input-group -->
 						</li>
-						<div id="treeview1" style="height:690px; overflow:auto" class="treeview"></div>
+						<div id="treeview1" style="height:690px; overflow:auto"
+							class="treeview"></div>
 					</ul>
 				</div>
 				<!-- /.sidebar-collapse -->
@@ -368,6 +369,8 @@
 		var columsArray = new Array();
 		// 本次查询所涉及的数据表清单
 		var selectTables = new Array();
+		var beginTime,
+			endTime;
 	
 		//侧边栏菜单树内容查找
 		var findSelectableNodes = function() {
@@ -483,7 +486,6 @@
 				data : {
 					zdbm : '000',
 				},
-				timeout : 5000, //超时时间
 				dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
 				success : function(data, textStatus, jqXHR) {
 					defaultData = "[" + JSON.stringify(data) + "]";
@@ -518,6 +520,7 @@
 	
 		// 提交查询处理按钮点击事件
 		function goSearch() {
+			beginTime = new Date();
 			whereConditionSQL = '';
 			groupClauseSQL = '';
 			havingConditionSQL = '';
@@ -617,6 +620,9 @@
 							layer.closeAll('loading');
 							// 恢复统计按钮状态
 							$("#searchButton").attr("disabled", false);
+							endTime = new Date();
+							let totalTime = Math.round((endTime.getTime()-beginTime.getTime())/1000);
+							layer.msg("本次统计总共耗时： "+totalTime+" 秒");						
 						},
 						onLoadError : function() {
 							// 关闭加载层
@@ -822,7 +828,7 @@
 				dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
 				success : function(data, textStatus, jqXHR) {
 					//layer.alert('文件已生成，文件名为:' + data.fileName);
-					window.location="ftp://192.168.0.200/"+data.fileName; 
+					window.location = "ftp://192.168.0.200/" + data.fileName;
 				}
 			});
 		}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<title>关系图</title>
+
+</head>
+
+<body>
+	<div id="paper"></div>
+	<script type="text/javascript" src="js/dracula/raphael.min.js"></script>
+	<script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+	<script type="text/javascript" src="js/dracula/dracula.min.js"></script>
+	<script type="text/javascript">
+		var g = new Dracula.Graph();
+		$.ajax({
+			url : 'drawRelationShip',
+			type : 'POST', //GET
+			contentType : 'application/x-www-form-urlencoded',
+			async : true, //或false,是否异步
+			dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
+			success : function(data, textStatus, jqXHR) {
+				var result = data.rela;
+				for (var value in result) {
+					console.log(value + ":");
+					var temp = result[value];
+					for (var relaValue in temp) {
+						console.log(relaValue);
+						g.addEdge(value, relaValue);
+					}
+				}
+				var layouter = new Dracula.Layout.Spring(g);
+				layouter.layout();
+				var renderer = new Dracula.Renderer.Raphael('#paper', g, 1920, 1080);
+				renderer.draw();
+			}
+		});
+	</script>
+</body>
+</html>

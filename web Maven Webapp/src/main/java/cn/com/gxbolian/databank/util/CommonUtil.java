@@ -158,7 +158,6 @@ public class CommonUtil {
 		int rowNum = 0, cellNum = 0;
 		XSSFRow row = sheet.createRow(rowNum);
 		while (itHead.hasNext()) {
-			// 创建单元格，操作第三行第三列
 			XSSFCell cell = row.createCell(cellNum, CellType.STRING);
 			String tempValue = itHead.next().get("title").toString();
 			log.debug("tempValue:" + tempValue);
@@ -167,25 +166,30 @@ public class CommonUtil {
 		}
 		rowNum++;
 		cellNum = 0;
+		String cellValue = "", cellType = "";
+		XSSFCell cell = null;
 		Iterator<List<Map<String, Object>>> itBody = body.iterator();
+		List<Map<String, Object>> mapList = null;
+		Iterator<Map<String, Object>> it = null;
 		while (itBody.hasNext()) {
 			row = sheet.createRow(rowNum);
-			List<Map<String, Object>> mapList = itBody.next();
-			Iterator<Map<String, Object>> it = mapList.iterator();
+			// 对每一行数据进行处理【数据中每一个Map只有一对键值，即一个字段，分别为字段名和值】
+			mapList = itBody.next();
+			it = mapList.iterator();
 			while (it.hasNext()) {
 				Map<String, Object> map = it.next();
 				for (Object entry : map.values()) {
 					// 数据库中字段内容为NULL时，如不进行处理会报出空指针异常，因此需要特殊处理
-					String cellValue = entry == null ? "" : entry.toString();
-					String cellType = entry == null ? "" : entry.getClass().getName();
+					cellValue = entry == null ? "" : entry.toString();
+					cellType = entry == null ? "" : entry.getClass().getName();
 					if ("java.lang.String".equals(cellType)) {
-						XSSFCell cell = row.createCell(cellNum, CellType.STRING);
+						cell = row.createCell(cellNum, CellType.STRING);
 						cell.setCellValue(cellValue);
 					} else if ("java.math.BigDecimal".equals(cellType)) {
-						XSSFCell cell = row.createCell(cellNum, CellType.NUMERIC);
+						cell = row.createCell(cellNum, CellType.NUMERIC);
 						cell.setCellValue(cellValue);
 					} else {
-						XSSFCell cell = row.createCell(cellNum, CellType.STRING);
+						cell = row.createCell(cellNum, CellType.STRING);
 						cell.setCellValue(cellValue);
 					}
 					cellNum++;
