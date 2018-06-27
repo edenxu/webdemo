@@ -561,7 +561,7 @@
 			paramsObject.havingClause = havingConditionSQL;
 			paramsObject.groupClause = groupClauseSQL;
 			paramsObject.groupFlag = groupMode;
-			console.log(paramsObject);
+			// console.log(paramsObject);
 			// 展示加载层
 			layer.load();
 			// 屏蔽查询按钮
@@ -621,8 +621,12 @@
 							// 恢复统计按钮状态
 							$("#searchButton").attr("disabled", false);
 							endTime = new Date();
-							let totalTime = Math.round((endTime.getTime()-beginTime.getTime())/1000);
-							layer.msg("本次统计总共耗时： "+totalTime+" 秒");						
+							let totalTime = Math.round((endTime.getTime() - beginTime.getTime()) / 1000);
+							layer.alert("本次统计总共耗时： " + totalTime + " 秒");
+						},
+						onPageChange : function(data) {
+							// 翻页的时候重新计算开始时间
+							beginTime = new Date();
 						},
 						onLoadError : function() {
 							// 关闭加载层
@@ -810,12 +814,13 @@
 		}
 	
 		function exportData() {
-			if ($dataTable.bootstrapTable('getData').length <= 0 || table == "") {
+			/* if ($dataTable.bootstrapTable('getData').length <= 0 || table == "") {
 				layer.msg('当前无可导出数据', {
 					icon : 1
 				});
 				return;
-			}
+			} */
+			table = 'yxscdb.auto_3943911450626048';
 			$.ajax({
 				url : 'exportData',
 				type : 'POST', //GET

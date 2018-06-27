@@ -10,6 +10,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
@@ -51,6 +52,7 @@ public class DemoServiceImpl implements IDemoService {
 	private IGreenplumCommonDAO greenplumCommonDAOImpl;
 
 	@Override
+	@Cacheable("getXtpzSjyListByExample")
 	public List<XtpzSjy> getXtpzSjyListByExample(XtpzSjy sjy) {
 		XtpzSjyExample example = new XtpzSjyExample();
 		if (sjy.getFlbm() == null || "".equals(sjy.getFlbm())) {
@@ -63,6 +65,7 @@ public class DemoServiceImpl implements IDemoService {
 	}
 
 	@Override
+	@Cacheable("getXtpzSjzdListByExample")
 	public List<XtpzSjzd> getXtpzSjzdListByExample(XtpzSjzd sjzd) {
 		XtpzSjzdExample example = new XtpzSjzdExample();
 		if (sjzd.getSjybm() == null || "".equals(sjzd.getSjybm())) {
@@ -75,6 +78,7 @@ public class DemoServiceImpl implements IDemoService {
 	}
 
 	@Override
+	@Cacheable("getNodeInfoForTree")
 	public String getNodeInfoForTree(String nodeId) {
 		XtpzSjy sjy = new XtpzSjy();
 		Gson gson = new Gson();
@@ -125,7 +129,9 @@ public class DemoServiceImpl implements IDemoService {
 				sb.append(" AND ").append(object.getWhereClause());
 			}
 		}
-		if (object.getGroupFlag() != null && "Y".equals(object.getGroupFlag().trim())) {
+		if (object.getGroupFlag() != null && "Y".equals(object.getGroupFlag().trim())
+				&& !"".equals(object.getGroupClause())) {
+			// 如果分组标识为Y，并且GroupClause不为空（即：统计结果除了聚合字段还有其他字段) 则添加Group By 从句
 			sb.append(" GROUP BY ").append(object.getGroupClause());
 		}
 		if (!"".equals(object.getHavingClause())) {
@@ -135,6 +141,7 @@ public class DemoServiceImpl implements IDemoService {
 	}
 
 	@Override
+	@Cacheable("getNodeInfoForBootstrapTreeviewEntity")
 	public BootstrapTreeViewEntity getNodeInfoForBootstrapTreeviewEntity(String nodeId) {
 		XtpzSjy result = sjyDao.selectByPrimaryKey(nodeId);
 		BootstrapTreeViewEntity entity = new BootstrapTreeViewEntity();
@@ -179,20 +186,20 @@ public class DemoServiceImpl implements IDemoService {
 	}
 
 	@Override
+	@Cacheable("getDataForBootstrapDataTable")
 	public Map<String, Object> getDataForBootstrapDataTable(String tableName, String columns, String condition,
 			String orderByColumn, String orderByMode, String limit, String offset) {
 		Map<String, Object> map = new HashMap<String, Object>();
 		long rowcount = greenplumCommonDAOImpl.getTableRowcountByCondition(tableName, condition);
 		List<Map<String, Object>> list = greenplumCommonDAOImpl.getTableDataByConditionTransforColumns(tableName,
 				columns, condition, orderByColumn, orderByMode, limit, offset);
-//		List<List<Map<String, Object>>> list = greenplumCommonDAOImpl.getTableDataByConditionTransforColumnsSorted(
-//				tableName, columns, condition, orderByColumn, orderByMode, limit, offset);
 		map.put("total", rowcount);
 		map.put("rows", list);
 		return map;
 	}
 
 	@Override
+	@Cacheable("getTableColumnNameAndDescription")
 	public List<Map<String, Object>> getTableColumnNameAndDescription(String tableName) {
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		list = greenplumCommonDAOImpl.getTableColumnNameAndDescription(tableName);
@@ -240,6 +247,7 @@ public class DemoServiceImpl implements IDemoService {
 	}
 
 	@Override
+	@Cacheable("getAllConnectedGraphBySjzd")
 	public HashMap<String, HashMap<String, Integer>> getAllConnectedGraphBySjzd() {
 		HashMap<String, HashMap<String, Integer>> stepLength = new HashMap<String, HashMap<String, Integer>>();
 		HashMap<String, Integer> step = new HashMap<String, Integer>();
@@ -267,6 +275,7 @@ public class DemoServiceImpl implements IDemoService {
 	}
 
 	@Override
+	@Cacheable("getXtpzXlcsListByExample")
 	public List<XtpzXlcs> getXtpzXlcsListByExample(XtpzXlcs xlcs) {
 		XtpzXlcsExample example = new XtpzXlcsExample();
 		example.createCriteria().andZdbmEqualTo(xlcs.getZdbm());
@@ -294,6 +303,7 @@ public class DemoServiceImpl implements IDemoService {
 	}
 
 	@Override
+	@Cacheable("getXtpzXlcstzListByExample")
 	public List<XtpzXlcstz> getXtpzXlcstzListByExample(XtpzXlcstz xlcstz) {
 		XtpzXlcstzExample example = new XtpzXlcstzExample();
 		example.createCriteria().andZblshEqualTo(xlcstz.getZblsh());
@@ -307,6 +317,12 @@ public class DemoServiceImpl implements IDemoService {
 		List<List<Map<String, Object>>> list = greenplumCommonDAOImpl.getTableDataByConditionTransforColumnsSorted(
 				tableName, columns, condition, orderByColumn, orderByMode, limit, offset);
 		return list;
+	}
+
+	@Override
+	@Cacheable("getTotoalRowcountByTableName")
+	public long getTotoalRowcountByTableName(String tableName) {
+		return greenplumCommonDAOImpl.getTableRowcountByCondition(tableName, "");
 	}
 
 }

@@ -148,4 +148,13 @@ public interface IDemoService {
 	 */
 	public List<List<Map<String, Object>>> getDataForBootstrapDataTableToExport(String tableName, String columns,
 			String condition, String orderByColumn, String orderByMode, String limit, String offset);
+
+	/**
+	 * 根据表名获取该数据表的总记录数
+	 * 
+	 * @param tableName
+	 *            数据表名
+	 * @return 该表的总记录数
+	 */
+	public long getTotoalRowcountByTableName(String tableName);
 }

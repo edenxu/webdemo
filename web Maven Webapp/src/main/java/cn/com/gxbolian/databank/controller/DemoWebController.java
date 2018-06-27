@@ -119,12 +119,27 @@ public class DemoWebController {
 			map.put("fileName", tableName);
 			return map;
 		}
-		List<Map<String, Object>> head = demoService.getTableColumnNameAndDescription(tableName);
-		List<List<Map<String, Object>>> body = demoService.getDataForBootstrapDataTableToExport(tableName, "", "", "",
-				"", "99999999", "0");
-		String fileName = CommonUtil.exportDataToExcel(head, body);
-		head = null;
-		body = null;
+		long totalRows = demoService.getTotoalRowcountByTableName(tableName);
+		String fileName = "";
+		// 如果记录数少于10000条，则直接导出
+		if (totalRows <= 10000) {
+			List<Map<String, Object>> head = demoService.getTableColumnNameAndDescription(tableName);
+			List<List<Map<String, Object>>> body = demoService.getDataForBootstrapDataTableToExport(tableName, "", "",
+					"", "", "99999999", "0");
+			fileName = CommonUtil.exportDataToExcel(head, body);
+			head = null;
+			body = null;
+		} else {
+			List<Map<String, Object>> head = demoService.getTableColumnNameAndDescription(tableName);
+			fileName = CommonUtil.exportDataToExcelHead(head);
+			List<List<Map<String, Object>>> body = null;
+			for (long i = 0; i <= totalRows; i += 5000) {
+				body = demoService.getDataForBootstrapDataTableToExport(tableName, "", "", "", "",
+						String.valueOf(i + 5000), String.valueOf(i));
+				CommonUtil.exportDataToExcelBody(fileName, body);
+				body.clear();
+			}
+		}
 		map.put("fileName", fileName);
 		return map;
 	}

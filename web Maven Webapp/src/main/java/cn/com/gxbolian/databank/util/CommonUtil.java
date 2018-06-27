@@ -1,6 +1,7 @@
 package cn.com.gxbolian.databank.util;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -13,7 +14,11 @@ import java.util.UUID;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -150,15 +155,15 @@ public class CommonUtil {
 			return "";
 		}
 		// 创建工作簿
-		XSSFWorkbook workBook = new XSSFWorkbook();
+		SXSSFWorkbook workBook = new SXSSFWorkbook(10000); // 内存中只保存1000行数据，超出部分刷到缓存，避免内存溢出的情况发生
 		// 创建工作表
-		XSSFSheet sheet = workBook.createSheet("数据统计结果");
+		Sheet sheet = workBook.createSheet("数据统计结果");
 		Iterator<Map<String, Object>> itHead = head.iterator();
 		// 创建行
 		int rowNum = 0, cellNum = 0;
-		XSSFRow row = sheet.createRow(rowNum);
+		Row row = sheet.createRow(rowNum);
 		while (itHead.hasNext()) {
-			XSSFCell cell = row.createCell(cellNum, CellType.STRING);
+			Cell cell = row.createCell(cellNum, CellType.STRING);
 			String tempValue = itHead.next().get("title").toString();
 			log.debug("tempValue:" + tempValue);
 			cell.setCellValue(tempValue);
@@ -167,7 +172,7 @@ public class CommonUtil {
 		rowNum++;
 		cellNum = 0;
 		String cellValue = "", cellType = "";
-		XSSFCell cell = null;
+		Cell cell = null;
 		Iterator<List<Map<String, Object>>> itBody = body.iterator();
 		List<Map<String, Object>> mapList = null;
 		Iterator<Map<String, Object>> it = null;
@@ -251,6 +256,149 @@ public class CommonUtil {
 			try {
 				file.createNewFile();
 			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public static String exportDataToExcelHead(List<Map<String, Object>> head) {
+		if (head.size() <= 0) {
+			return "";
+		}
+		// 创建工作簿
+		XSSFWorkbook workBook = new XSSFWorkbook();
+		// 创建工作表
+		XSSFSheet sheet = workBook.createSheet("数据统计结果");
+		Iterator<Map<String, Object>> itHead = head.iterator();
+		// 创建行
+		int rowNum = 0, cellNum = 0;
+		XSSFRow row = sheet.createRow(rowNum);
+		while (itHead.hasNext()) {
+			XSSFCell cell = row.createCell(cellNum, CellType.STRING);
+			String tempValue = itHead.next().get("title").toString();
+			log.debug("tempValue:" + tempValue);
+			cell.setCellValue(tempValue);
+			cellNum++;
+		}
+
+		FileOutputStream outputStream = null;
+		String fileName = UUID.randomUUID().toString().replace("-", "").toLowerCase() + ".xlsx";
+		try {
+			log.debug("EXPORT_DIR:" + CommonUtil.EXPORT_DIR);
+			// 创建文件
+			createDirectoryAndFile(CommonUtil.EXPORT_DIR, fileName);
+			File f = new File(CommonUtil.EXPORT_DIR + fileName);
+			outputStream = new FileOutputStream(f);
+			workBook.write(outputStream);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				if (outputStream != null) {
+					outputStream.close();
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				workBook.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return fileName;
+	}
+
+	public static void exportDataToExcelBody(String fileName, List<List<Map<String, Object>>> body) {
+		if (body.size() == 0) {
+			return;
+		}
+		FileInputStream excelFileInputStream = null;
+		SXSSFWorkbook workBook = null;
+		XSSFWorkbook wb = null;
+		try {
+			excelFileInputStream = new FileInputStream(CommonUtil.EXPORT_DIR + fileName);
+			// 创建工作簿
+			wb = new XSSFWorkbook(excelFileInputStream);
+			workBook = new SXSSFWorkbook(wb, 1000);
+			workBook.setCompressTempFiles(true);
+			excelFileInputStream.close();
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// 创建工作表
+		Sheet sheet = workBook.getSheetAt(0);
+		// 创建行
+		int rowNum = sheet.getLastRowNum() + 1, cellNum = 0;
+		Row row = sheet.createRow(rowNum);
+		String cellValue = "", cellType = "";
+		Cell cell = null;
+		Iterator<List<Map<String, Object>>> itBody = body.iterator();
+		List<Map<String, Object>> mapList = null;
+		Iterator<Map<String, Object>> it = null;
+		while (itBody.hasNext()) {
+			row = sheet.createRow(rowNum);
+			// 对每一行数据进行处理【数据中每一个Map只有一对键值，即一个字段，分别为字段名和值】
+			mapList = itBody.next();
+			it = mapList.iterator();
+			while (it.hasNext()) {
+				Map<String, Object> map = it.next();
+				for (Object entry : map.values()) {
+					// 数据库中字段内容为NULL时，如不进行处理会报出空指针异常，因此需要特殊处理
+					cellValue = entry == null ? "" : entry.toString();
+					cellType = entry == null ? "" : entry.getClass().getName();
+					if ("java.lang.String".equals(cellType)) {
+						cell = row.createCell(cellNum, CellType.STRING);
+						cell.setCellValue(cellValue);
+					} else if ("java.math.BigDecimal".equals(cellType)) {
+						cell = row.createCell(cellNum, CellType.NUMERIC);
+						cell.setCellValue(cellValue);
+					} else {
+						cell = row.createCell(cellNum, CellType.STRING);
+						cell.setCellValue(cellValue);
+					}
+					cellNum++;
+					cell = null;
+				}
+			}
+			rowNum++;
+			cellNum = 0;
+			row = null;
+		}
+		FileOutputStream outputStream = null;
+		try {
+			outputStream = new FileOutputStream(CommonUtil.EXPORT_DIR + fileName, true);
+			workBook.write(outputStream);
+			outputStream.flush();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				if (outputStream != null) {
+					outputStream.close();
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				workBook.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

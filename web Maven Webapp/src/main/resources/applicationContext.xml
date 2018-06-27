@@ -16,6 +16,7 @@
 		<property name="locations">
 			<list>
 				<value>classpath:config.properties</value>
+				<value>classpath:redis.properties</value>
 			</list>
 		</property>
 	</bean>
@@ -86,7 +87,7 @@
 	<!-- 启动包扫描功能，以便注册带有@Controller、@Service、@repository、@Component等注解的类成为spring的bean -->
 	<context:component-scan base-package="cn.com.gxbolian.databank.*" />
 	<!-- 引入同文件夹下的redis属性配置文件 -->
-	<!-- <import resource="spring-redis.xml" /> -->
+	<import resource="spring-redis.xml" />
 	<!-- 引入同文件夹下的ActiveMQ属性配置文件 -->
 	<!-- <import resource="activemq-config.xml" /> -->
 	<!-- 引入同文件夹下的Quartz属性配置文件 -->
