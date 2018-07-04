@@ -78,9 +78,23 @@ public class DemoWebController {
 			@RequestBody ParamsObject object) {
 		Map<String, Object> map = new HashMap<String, Object>();
 		String makeupSQL = demoService.makeUpSelectSQL(object);
-		log.info(makeupSQL);
+		log.info("当前结果集对应的SQL语句为:" + makeupSQL);
 		String tableName = demoService.createTableAsSelectSQL(makeupSQL);
-		map.put("columns", demoService.getTableColumnNameAndDescription(tableName));
+		// 获取新数据集的元数据信息
+		List<Map<String, Object>> resultMeta = demoService.getTableColumnNameAndDescription(tableName);
+		// 数据结果集在分析处理
+		if ("Y".equals(object.getSaveFlag())) {
+			// 1. 写入数据集基础信息
+			demoService.insertAutoGenerateTableInfo(tableName, object.getMyTableName(), "admin", "N");
+			// 2. 写入数据个性化数据字典
+			demoService.insertPersonalDirectory("admin", tableName, resultMeta);
+			// 3. 将数据集放入个性化的关系图中
+			demoService.insertPersonalGridInfo("admin", resultMeta);
+		} else {
+			// 1. 写入数据集基础信息
+			demoService.insertAutoGenerateTableInfo(tableName, object.getMyTableName(), "admin", "T");
+		}
+		map.put("columns", resultMeta);
 		map.put("tableName", tableName);
 		map.put("sql", makeupSQL);
 		return map;

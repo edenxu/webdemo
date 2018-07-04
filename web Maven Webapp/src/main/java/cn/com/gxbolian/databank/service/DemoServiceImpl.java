@@ -1,11 +1,17 @@
 package cn.com.gxbolian.databank.service;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,7 +24,9 @@ import com.google.gson.Gson;
 import cn.com.gxbolian.databank.dao.IGreenplumCommonDAO;
 import cn.com.gxbolian.databank.dao.XtpzSjglysMapper;
 import cn.com.gxbolian.databank.dao.XtpzSjyMapper;
+import cn.com.gxbolian.databank.dao.XtpzSjzdGxhMapper;
 import cn.com.gxbolian.databank.dao.XtpzSjzdMapper;
+import cn.com.gxbolian.databank.dao.XtpzTableGxhMapper;
 import cn.com.gxbolian.databank.dao.XtpzXlcsMapper;
 import cn.com.gxbolian.databank.dao.XtpzXlcstzMapper;
 import cn.com.gxbolian.databank.entity.BootstrapTreeViewEntity;
@@ -29,11 +37,14 @@ import cn.com.gxbolian.databank.entity.XtpzSjy;
 import cn.com.gxbolian.databank.entity.XtpzSjyExample;
 import cn.com.gxbolian.databank.entity.XtpzSjzd;
 import cn.com.gxbolian.databank.entity.XtpzSjzdExample;
+import cn.com.gxbolian.databank.entity.XtpzSjzdGxh;
+import cn.com.gxbolian.databank.entity.XtpzTableGxh;
 import cn.com.gxbolian.databank.entity.XtpzXlcs;
 import cn.com.gxbolian.databank.entity.XtpzXlcsExample;
 import cn.com.gxbolian.databank.entity.XtpzXlcstz;
 import cn.com.gxbolian.databank.entity.XtpzXlcstzExample;
 import cn.com.gxbolian.databank.util.CommonUtil;
+import cn.com.gxbolian.databank.util.IdWorker;
 
 @Service
 public class DemoServiceImpl implements IDemoService {
@@ -48,6 +59,10 @@ public class DemoServiceImpl implements IDemoService {
 	private XtpzXlcsMapper xlcsDao;
 	@Autowired
 	private XtpzXlcstzMapper xlcstzDao;
+	@Autowired
+	private XtpzTableGxhMapper tablegxhDao;
+	@Autowired
+	private XtpzSjzdGxhMapper sjzdGxhDao;
 	@Autowired
 	private IGreenplumCommonDAO greenplumCommonDAOImpl;
 
@@ -221,7 +236,7 @@ public class DemoServiceImpl implements IDemoService {
 		String[] roadArray = new String[road.size()];
 		boolean firstFlag = true;
 		road.toArray(roadArray);
-		
+
 		// 将关系图中的线路节点进行去重处理后，作为SQL语句中FROM子句的数据表来源
 		String tablesNameList = Arrays.toString(CommonUtil.StringArrayDuplicateRemoval(roadArray));
 		tablesNameList = tablesNameList.substring(1, tablesNameList.length() - 1);
@@ -276,7 +291,7 @@ public class DemoServiceImpl implements IDemoService {
 	}
 
 	@Override
-	//@Cacheable("getXtpzXlcsListByExample")
+	// @Cacheable("getXtpzXlcsListByExample")
 	public List<XtpzXlcs> getXtpzXlcsListByExample(XtpzXlcs xlcs) {
 		XtpzXlcsExample example = new XtpzXlcsExample();
 		example.createCriteria().andZdbmEqualTo(xlcs.getZdbm());
@@ -324,6 +339,74 @@ public class DemoServiceImpl implements IDemoService {
 	@Cacheable("getTotoalRowcountByTableName")
 	public long getTotoalRowcountByTableName(String tableName) {
 		return greenplumCommonDAOImpl.getTableRowcountByCondition(tableName, "");
+	}
+
+	@Override
+	public void insertPersonalGridInfo(String opertor, List<Map<String, Object>> resultMeta) {
+		XtpzTableGxh tableGxh = new XtpzTableGxh();
+		IdWorker id = new IdWorker(2);
+		tableGxh.setLsh(String.valueOf(id.nextId()));
+		resultMeta.forEach(item -> {
+			for (Entry<String, Object> entry : item.entrySet()) {
+
+			}
+		});
+		tablegxhDao.insert(tableGxh);
+	}
+
+	@Override
+	public void insertAutoGenerateTableInfo(String tableName, String tableNickName, String operator, String status) {
+		XtpzTableGxh tableGxh = new XtpzTableGxh();
+		IdWorker id = new IdWorker(2);
+		tableGxh.setLsh(String.valueOf(id.nextId()));
+		tableGxh.setCzybm(operator);
+		tableGxh.setMc(tableName);
+		tableGxh.setBm(tableNickName);
+		tableGxh.setScsj(new Date(System.currentTimeMillis()));
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Date date = null;
+		try {
+			date = df.parse("2099-12-31 23:59:59");
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		long time = cal.getTimeInMillis();
+		tableGxh.setSxsj(new Date(time));
+		tableGxh.setZt(status);
+		tablegxhDao.insert(tableGxh);
+	}
+
+	@Override
+	public void insertPersonalDirectory(String opertor, String tableName, List<Map<String, Object>> resultMeta) {
+		IdWorker id = new IdWorker(2);
+		resultMeta.forEach(item -> {
+			for (Entry<String, Object> entry : item.entrySet()) {
+				if ("field".equals(entry.getKey())) {
+					XtpzSjzdExample example = new XtpzSjzdExample();
+					example.createCriteria().andYbzdEqualTo(entry.getValue().toString());
+					XtpzSjzd sjzd = this.sjzdDao.selectByExample(example).get(0);
+					XtpzSjzdGxh gxhSjzd = new XtpzSjzdGxh();
+					gxhSjzd.setZdbm(String.valueOf(id.nextId()));
+					// 个性化数据域
+					gxhSjzd.setSjybm("999");
+					gxhSjzd.setZdmc(sjzd.getZdmc());
+					gxhSjzd.setYbmc(tableName);
+					gxhSjzd.setYbzd(tableName + ".\"" + entry.getValue().toString() + "\"");
+					gxhSjzd.setSjlx(sjzd.getSjlx());
+					gxhSjzd.setJhbz("N");
+					gxhSjzd.setCzybm(opertor);
+					sjzdGxhDao.insert(gxhSjzd);
+				}
+			}
+		});
+	}
+
+	@Override
+	public void insertTablsRelationToGrid(String tableA, String columnA, String tableB, String columnB, String type) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

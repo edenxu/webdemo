@@ -9,6 +9,8 @@ public class ParamsObject {
 	private String groupClause;
 	private String havingClause;
 	private String groupFlag;
+	private String saveFlag;
+	private String myTableName;
 
 	public List<XtpzSjzd> getSelectTables() {
 		return selectTables;
@@ -48,6 +50,22 @@ public class ParamsObject {
 
 	public void setGroupFlag(String groupFlag) {
 		this.groupFlag = groupFlag;
+	}
+
+	public String getSaveFlag() {
+		return saveFlag;
+	}
+
+	public void setSaveFlag(String saveFlag) {
+		this.saveFlag = saveFlag;
+	}
+
+	public String getMyTableName() {
+		return myTableName;
+	}
+
+	public void setMyTableName(String myTableName) {
+		this.myTableName = myTableName;
 	}
 
 }

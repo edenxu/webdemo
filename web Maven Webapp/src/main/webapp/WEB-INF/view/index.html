@@ -273,6 +273,8 @@
 									<span class="glyphicon glyphicon-search" onClick="goSearch()">
 										查 询 </span>
 								</button>
+								<input type="checkbox" name="saveToGxh" id="saveToGxh">结果再分析</input>
+								<input type="text" id="myTableName" placeholder="给当前结果集起个别名" />
 							</p>
 							</br>
 							<div class="whereArea" id="whereArea"></div>
@@ -510,6 +512,19 @@
 	
 		// 提交查询处理按钮点击事件
 		function goSearch() {
+			let saveFlag = $("input[name='saveToGxh']:checked").val();
+			let myTableName = '';
+			if (typeof saveFlag !== 'undefined') {
+				saveFlag = 'Y';
+				myTableName = $('#myTableName').val();
+				console.log(myTableName);
+				if (myTableName === '') {
+					layer.alert('为了进行结果集再分析，需要给当前的结果集定义一个别名.');
+					return;
+				}
+			} else {
+				saveFlag = 'N';
+			}
 			beginTime = new Date();
 			whereConditionSQL = '';
 			groupClauseSQL = '';
@@ -551,6 +566,8 @@
 			paramsObject.havingClause = havingConditionSQL;
 			paramsObject.groupClause = groupClauseSQL;
 			paramsObject.groupFlag = groupMode;
+			paramsObject.saveFlag = saveFlag;
+			paramsObject.myTableName = myTableName;
 			// console.log(paramsObject);
 			// 展示加载层
 			layer.load();
@@ -566,6 +583,7 @@
 				dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
 				success : function(data, textStatus, jqXHR) {
 					var columns = data.columns;
+					console.log(columns);
 					columsArray = [];
 					// 给表头字段添加辅助属性
 					for (var i = 0; i < columns.length; i++) {

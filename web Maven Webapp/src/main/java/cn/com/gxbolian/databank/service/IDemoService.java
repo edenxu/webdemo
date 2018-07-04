@@ -157,4 +157,57 @@ public interface IDemoService {
 	 * @return 该表的总记录数
 	 */
 	public long getTotoalRowcountByTableName(String tableName);
+
+	/**
+	 * 根据用户选择，将数据表加入到数据表连通图中
+	 * 
+	 * @param opertor
+	 *            操作员ID
+	 * @param resultMeta
+	 *            新数据集的元数据信息
+	 */
+	public void insertPersonalGridInfo(String opertor, List<Map<String, Object>> resultMeta);
+
+	/**
+	 * 记录自动创建表的相关基本信息【创建人、表名、别名、有效时间，状态等】
+	 * 
+	 * @param tableName
+	 *            表名
+	 * @param tableNickName
+	 *            别名
+	 * @param operator
+	 *            操作员
+	 * @param status
+	 *            状态[T:临时;N:正常在分析]
+	 */
+	public void insertAutoGenerateTableInfo(String tableName, String tableNickName, String operator, String status);
+
+	/**
+	 * 将用户统计结果集写入个性化数据字典
+	 * 
+	 * @param opertor
+	 *            操作员ID
+	 * @param tableName
+	 *            表名
+	 * @param resultMeta
+	 *            结果集元数据
+	 */
+	public void insertPersonalDirectory(String opertor, String tableName, List<Map<String, Object>> resultMeta);
+
+	/**
+	 * 写入数据表关联信息
+	 * 
+	 * @param tableA
+	 *            表A
+	 * @param columnA
+	 *            字段A
+	 * @param tableB
+	 *            表B
+	 * @param columnB
+	 *            字段B
+	 * @param type
+	 *            插入类型：[G:全局;P:个性化]
+	 */
+	public void insertTablsRelationToGrid(String tableA, String columnA, String tableB, String columnB, String type);
+
 }
