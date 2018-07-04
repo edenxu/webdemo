@@ -33,7 +33,7 @@ public class CommonUtil {
 
 	public static Logger log = LogManager.getLogger(CommonUtil.class);
 	@Value("${export.dir}")
-	public static String EXPORT_DIR = "D:\\360Downloads\\";
+	public static String EXPORT_DIR = "d:\\360Downloads\\";
 
 	/**
 	 * 根据字段清单计算并返回一个去重后的涉及数据表数组
@@ -44,10 +44,17 @@ public class CommonUtil {
 	 */
 	public static String[] TableListDuplicateRemoval(List<XtpzSjzd> list) {
 		int j = list.size();
-		String[] container = new String[j];
+		List<String> swapList = new ArrayList<String>();
 		for (int i = 0; i < j; i++) {
-			container[i] = list.get(i).getYbmc();
+			// 如果源表名称为空则跳过[诸如COUNT(1)等聚合类的操作源表名称是空的,在考虑连通图的时候不需要参与处理]
+			if ("".equals(list.get(i).getYbmc())) {
+				continue;
+			}
+			swapList.add(list.get(i).getYbmc());
 		}
+		String[] container = new String[swapList.size()];
+		swapList.toArray(container);
+		log.info("container:" + container.length);
 		return StringArrayDuplicateRemoval(container);
 	}
 
@@ -150,6 +157,15 @@ public class CommonUtil {
 		return finalResult;
 	}
 
+	/**
+	 * 数据量少于50000的时候采用的简单Excel导出处理方法
+	 * 
+	 * @param head
+	 *            表头信息
+	 * @param body
+	 *            数据表内容信息
+	 * @return
+	 */
 	public static String exportDataToExcel(List<Map<String, Object>> head, List<List<Map<String, Object>>> body) {
 		if (head.size() <= 0 || body.size() <= 0) {
 			return "";
@@ -210,8 +226,11 @@ public class CommonUtil {
 			// 创建文件
 			createDirectoryAndFile(CommonUtil.EXPORT_DIR, fileName);
 			File f = new File(CommonUtil.EXPORT_DIR + fileName);
+			f.setWritable(true, false);
+			f.setReadable(true, false);
 			outputStream = new FileOutputStream(f);
 			workBook.write(outputStream);
+			outputStream.flush();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -220,15 +239,15 @@ public class CommonUtil {
 			e.printStackTrace();
 		} finally {
 			try {
-				if (outputStream != null) {
-					outputStream.close();
-				}
+				workBook.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			try {
-				workBook.close();
+				if (outputStream != null) {
+					outputStream.close();
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -248,10 +267,11 @@ public class CommonUtil {
 	public static void createDirectoryAndFile(String path, String fileName) {
 		File file = new File(path);
 		if (!file.exists()) {
-			log.debug("Create directory in path:" + path);
 			file.mkdir();
 		}
-		file = new File(fileName);
+		file = new File(path + fileName);
+		file.setWritable(true, false);
+		file.setReadable(true, false);
 		if (!file.exists()) {
 			try {
 				file.createNewFile();
@@ -261,9 +281,17 @@ public class CommonUtil {
 		}
 	}
 
-	public static String exportDataToExcelHead(List<Map<String, Object>> head) {
+	/**
+	 * 生成导出Excel的模板文件
+	 * 
+	 * @param fileName
+	 *            文件名【含路径】
+	 * @param head
+	 *            表头数据信息
+	 */
+	public static void exportDataToExcelHead(String fileName, List<Map<String, Object>> head) {
 		if (head.size() <= 0) {
-			return "";
+			return;
 		}
 		// 创建工作簿
 		XSSFWorkbook workBook = new XSSFWorkbook();
@@ -276,27 +304,28 @@ public class CommonUtil {
 		while (itHead.hasNext()) {
 			XSSFCell cell = row.createCell(cellNum, CellType.STRING);
 			String tempValue = itHead.next().get("title").toString();
-			log.debug("tempValue:" + tempValue);
 			cell.setCellValue(tempValue);
 			cellNum++;
 		}
 
 		FileOutputStream outputStream = null;
-		String fileName = UUID.randomUUID().toString().replace("-", "").toLowerCase() + ".xlsx";
 		try {
-			log.debug("EXPORT_DIR:" + CommonUtil.EXPORT_DIR);
-			// 创建文件
-			createDirectoryAndFile(CommonUtil.EXPORT_DIR, fileName);
-			File f = new File(CommonUtil.EXPORT_DIR + fileName);
+			File f = new File(fileName);
+			f.setWritable(true, false);
+			f.setReadable(true, false);
 			outputStream = new FileOutputStream(f);
 			workBook.write(outputStream);
+			outputStream.flush();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
+			try {
+				workBook.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			try {
 				if (outputStream != null) {
 					outputStream.close();
@@ -305,17 +334,21 @@ public class CommonUtil {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			try {
-				workBook.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
-		return fileName;
 	}
 
-	public static void exportDataToExcelBody(String fileName, List<List<Map<String, Object>>> body) {
+	/**
+	 * 导出数据到Excel
+	 * 
+	 * @param templateFileName
+	 *            模板文件【数据表头】
+	 * @param fileIndex
+	 *            当前文件的序号【数据量大的时候需要拆分成多个Excel文件】
+	 * @param body
+	 *            需要写入数据的内容
+	 */
+	public static void exportDataToExcelBody(String templateFileName, int fileIndex,
+			List<List<Map<String, Object>>> body) {
 		if (body.size() == 0) {
 			return;
 		}
@@ -323,24 +356,22 @@ public class CommonUtil {
 		SXSSFWorkbook workBook = null;
 		XSSFWorkbook wb = null;
 		try {
-			excelFileInputStream = new FileInputStream(CommonUtil.EXPORT_DIR + fileName);
+			excelFileInputStream = new FileInputStream(templateFileName);
 			// 创建工作簿
 			wb = new XSSFWorkbook(excelFileInputStream);
 			workBook = new SXSSFWorkbook(wb, 1000);
 			workBook.setCompressTempFiles(true);
 			excelFileInputStream.close();
 		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		// 创建工作表
-		Sheet sheet = workBook.getSheetAt(0);
+		Sheet sheet = workBook.getSheet("数据统计结果");
 		// 创建行
-		int rowNum = sheet.getLastRowNum() + 1, cellNum = 0;
-		Row row = sheet.createRow(rowNum);
+		int cellNum = 0, rowNum = 1;
+		Row row = null;
 		String cellValue = "", cellType = "";
 		Cell cell = null;
 		Iterator<List<Map<String, Object>>> itBody = body.iterator();
@@ -377,29 +408,30 @@ public class CommonUtil {
 		}
 		FileOutputStream outputStream = null;
 		try {
-			outputStream = new FileOutputStream(CommonUtil.EXPORT_DIR + fileName, true);
+			String outputFileNmae = templateFileName.substring(0, templateFileName.indexOf("template")) + fileIndex
+					+ ".xlsx";
+			outputStream = new FileOutputStream(outputFileNmae, true);
 			workBook.write(outputStream);
-			outputStream.flush();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
+			try {
+				workBook.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			try {
 				if (outputStream != null) {
 					outputStream.close();
 				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			try {
-				workBook.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			// 删除临时文件
+			if (wb != null) {
+				workBook.dispose();
 			}
 		}
 	}

@@ -221,6 +221,7 @@ public class DemoServiceImpl implements IDemoService {
 		String[] roadArray = new String[road.size()];
 		boolean firstFlag = true;
 		road.toArray(roadArray);
+		
 		// 将关系图中的线路节点进行去重处理后，作为SQL语句中FROM子句的数据表来源
 		String tablesNameList = Arrays.toString(CommonUtil.StringArrayDuplicateRemoval(roadArray));
 		tablesNameList = tablesNameList.substring(1, tablesNameList.length() - 1);
@@ -275,7 +276,7 @@ public class DemoServiceImpl implements IDemoService {
 	}
 
 	@Override
-	@Cacheable("getXtpzXlcsListByExample")
+	//@Cacheable("getXtpzXlcsListByExample")
 	public List<XtpzXlcs> getXtpzXlcsListByExample(XtpzXlcs xlcs) {
 		XtpzXlcsExample example = new XtpzXlcsExample();
 		example.createCriteria().andZdbmEqualTo(xlcs.getZdbm());

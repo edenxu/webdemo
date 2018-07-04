@@ -1,8 +1,10 @@
 package cn.com.gxbolian.databank.controller;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,6 +25,7 @@ import cn.com.gxbolian.databank.entity.ParamsObject;
 import cn.com.gxbolian.databank.entity.XtpzXlcs;
 import cn.com.gxbolian.databank.service.IDemoService;
 import cn.com.gxbolian.databank.util.CommonUtil;
+import cn.com.gxbolian.databank.util.CompressUtil;
 
 @Controller
 // @RequestMapping(value = "/demoWeb")
@@ -79,6 +82,7 @@ public class DemoWebController {
 		String tableName = demoService.createTableAsSelectSQL(makeupSQL);
 		map.put("columns", demoService.getTableColumnNameAndDescription(tableName));
 		map.put("tableName", tableName);
+		map.put("sql", makeupSQL);
 		return map;
 	}
 
@@ -121,26 +125,43 @@ public class DemoWebController {
 		}
 		long totalRows = demoService.getTotoalRowcountByTableName(tableName);
 		String fileName = "";
-		// 如果记录数少于10000条，则直接导出
-		if (totalRows <= 10000) {
+		// 每个Excel文件的记录条数，超过的需要分多个文件保存
+		int fileRecordSize = 50000;
+		// 如果记录数少于50000条，则直接导出
+		if (totalRows <= fileRecordSize) {
 			List<Map<String, Object>> head = demoService.getTableColumnNameAndDescription(tableName);
 			List<List<Map<String, Object>>> body = demoService.getDataForBootstrapDataTableToExport(tableName, "", "",
 					"", "", "99999999", "0");
 			fileName = CommonUtil.exportDataToExcel(head, body);
 			head = null;
 			body = null;
+			map.put("fileName", fileName);
 		} else {
 			List<Map<String, Object>> head = demoService.getTableColumnNameAndDescription(tableName);
-			fileName = CommonUtil.exportDataToExcelHead(head);
+			String preFileName = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+			fileName = preFileName + "-template.xlsx";
+			// 创建文件
+			CommonUtil.createDirectoryAndFile(CommonUtil.EXPORT_DIR + preFileName + "\\", fileName);
+			CommonUtil.exportDataToExcelHead(CommonUtil.EXPORT_DIR + preFileName + "\\" + fileName, head);
+			String templateFileName = CommonUtil.EXPORT_DIR + preFileName + "\\" + fileName;
+			int fileIndex = 1;
 			List<List<Map<String, Object>>> body = null;
-			for (long i = 0; i <= totalRows; i += 5000) {
+			for (long i = 0; i <= totalRows; i += fileRecordSize) {
 				body = demoService.getDataForBootstrapDataTableToExport(tableName, "", "", "", "",
-						String.valueOf(i + 5000), String.valueOf(i));
-				CommonUtil.exportDataToExcelBody(fileName, body);
+						String.valueOf(fileRecordSize), String.valueOf(i));
+				CommonUtil.exportDataToExcelBody(templateFileName, fileIndex++, body);
 				body.clear();
 			}
+			// 将结果集打包
+			try {
+				CompressUtil.compress(CommonUtil.EXPORT_DIR + preFileName,
+						CommonUtil.EXPORT_DIR + preFileName + ".zip");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			map.put("fileName", preFileName + ".zip");
 		}
-		map.put("fileName", fileName);
 		return map;
 	}
 
