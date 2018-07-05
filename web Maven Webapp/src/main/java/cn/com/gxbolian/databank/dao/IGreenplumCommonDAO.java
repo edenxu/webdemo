@@ -3,6 +3,7 @@ package cn.com.gxbolian.databank.dao;
 import java.util.List;
 import java.util.Map;
 
+import cn.com.gxbolian.databank.entity.XtpzSjglys;
 import cn.com.gxbolian.databank.entity.XtpzSjy;
 import cn.com.gxbolian.databank.entity.XtpzSjzd;
 
@@ -155,5 +156,14 @@ public interface IGreenplumCommonDAO {
 	 * @return 结果清单
 	 */
 	public List<XtpzSjzd> getXtpzSjzdInUnionMode(String queryValue, String operator, String mode);
+
+	/**
+	 * 从全局及个性化数据关联映射的并集中查询数据域信息
+	 * 
+	 * @param operator
+	 *            操作员
+	 * @return 结果清单
+	 */
+	public List<XtpzSjglys> getXtpzSjglysInUnionMode(String operator);
 
 }

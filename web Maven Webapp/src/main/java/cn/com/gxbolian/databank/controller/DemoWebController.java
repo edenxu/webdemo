@@ -78,7 +78,7 @@ public class DemoWebController {
 	public Map<String, Object> dealSelectedSQL(HttpServletRequest request, HttpServletResponse response,
 			@RequestBody ParamsObject object) {
 		Map<String, Object> map = new HashMap<String, Object>();
-		String makeupSQL = demoService.makeUpSelectSQL(object);
+		String makeupSQL = demoService.makeUpSelectSQL(object, "admin");
 		log.info("当前结果集对应的SQL语句为:" + makeupSQL);
 
 		String tableName = demoService.createTableAsSelectSQL(makeupSQL);

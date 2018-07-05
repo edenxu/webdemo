@@ -36,6 +36,7 @@ import cn.com.gxbolian.databank.entity.ParamsObject;
 import cn.com.gxbolian.databank.entity.XtpzSjglys;
 import cn.com.gxbolian.databank.entity.XtpzSjglysExample;
 import cn.com.gxbolian.databank.entity.XtpzSjglysGxh;
+import cn.com.gxbolian.databank.entity.XtpzSjglysGxhExample;
 import cn.com.gxbolian.databank.entity.XtpzSjy;
 import cn.com.gxbolian.databank.entity.XtpzSjyExample;
 import cn.com.gxbolian.databank.entity.XtpzSjyGxh;
@@ -140,6 +141,40 @@ public class DemoServiceImpl implements IDemoService {
 		selectColumns = CommonUtil.pickUpSelectedColumns(object.getSelectTables());
 		selectColumns = selectColumns.substring(0, selectColumns.length() - 1);
 		String fromTablesAndRelation = makeUpFromTablesAndColumnRelation(tableArray);
+
+		if (tableArray.length <= 1) {
+			sb.append(selectColumns).append(fromTablesAndRelation);
+			if (!"".equals(object.getWhereClause())) {
+				sb.append(" WHERE ").append(object.getWhereClause());
+			}
+		} else {
+			sb.append(selectColumns).append(fromTablesAndRelation);
+			if (!"".equals(object.getWhereClause())) {
+				sb.append(" AND ").append(object.getWhereClause());
+			}
+		}
+		if (object.getGroupFlag() != null && "Y".equals(object.getGroupFlag().trim())
+				&& !"".equals(object.getGroupClause())) {
+			// 如果分组标识为Y，并且GroupClause不为空（即：统计结果除了聚合字段还有其他字段) 则添加Group By 从句
+			sb.append(" GROUP BY ").append(object.getGroupClause());
+		}
+		if (!"".equals(object.getHavingClause())) {
+			sb.append(" HAVING ").append(object.getHavingClause());
+		}
+		return sb.toString();
+	}
+
+	@Override
+	public String makeUpSelectSQL(ParamsObject object, String operator) {
+		String selectColumns = "";
+		StringBuffer sb = new StringBuffer();
+		// 获取读取字段所涉及的相关数据表【经过去重处理】
+		String[] tableArray = CommonUtil.TableListDuplicateRemoval(object.getSelectTables());
+		log.info("tableArray:" + new Gson().toJson(tableArray));
+		// 获取需要查询的字段内容
+		selectColumns = CommonUtil.pickUpSelectedColumns(object.getSelectTables());
+		selectColumns = selectColumns.substring(0, selectColumns.length() - 1);
+		String fromTablesAndRelation = makeUpFromTablesAndColumnRelation(tableArray, operator);
 
 		if (tableArray.length <= 1) {
 			sb.append(selectColumns).append(fromTablesAndRelation);
@@ -325,6 +360,61 @@ public class DemoServiceImpl implements IDemoService {
 	}
 
 	@Override
+	public String makeUpFromTablesAndColumnRelation(String[] tablesArray, String operator) {
+		StringBuffer sb = new StringBuffer();
+		// 如果只涉及一张表，直接返回
+		if (tablesArray.length == 1) {
+			return sb.append(" FROM ").append(tablesArray[0]).toString();
+		}
+		// 获取所有数据表的网络连通图
+		HashMap<String, HashMap<String, Integer>> stepLength = new HashMap<String, HashMap<String, Integer>>();
+		stepLength = getAllConnectedGraphBySjzd(operator);
+		// 在关系图中获取连接所有查询统计所需数据表的最佳路径
+		List<String> road = CommonUtil.findOutTheBestRoadForTheArray(tablesArray, stepLength);
+		String[] roadArray = new String[road.size()];
+		boolean firstFlag = true;
+		road.toArray(roadArray);
+
+		// 将关系图中的线路节点进行去重处理后，作为SQL语句中FROM子句的数据表来源
+		String tablesNameList = Arrays.toString(CommonUtil.StringArrayDuplicateRemoval(roadArray));
+		tablesNameList = tablesNameList.substring(1, tablesNameList.length() - 1);
+		sb.append(" FROM ").append(tablesNameList).append(" WHERE ");
+		int size = roadArray.length;
+		for (int i = 0; i < size - 1; i++) {
+			String a = roadArray[i], b = roadArray[i + 1];
+			XtpzSjglysExample example = new XtpzSjglysExample();
+			example.createCriteria().andYbmcaEqualTo(a).andYbmcbEqualTo(b);
+			example.setOrderByClause(" ybmca asc");
+			List<XtpzSjglys> list = sjglDao.selectByExample(example);
+			// 补充个性化关联关系的部分
+			XtpzSjglysGxhExample exampleGxh = new XtpzSjglysGxhExample();
+			exampleGxh.createCriteria().andYbmcaEqualTo(a).andYbmcbEqualTo(b).andCzybmEqualTo(operator);
+			exampleGxh.setOrderByClause(" ybmca asc");
+			List<XtpzSjglysGxh> listGxh = sjglGxhDao.selectByExample(exampleGxh);
+			for (XtpzSjglysGxh gxh : listGxh) {
+				XtpzSjglys sjgl = new XtpzSjglys();
+				sjgl.setLsh(gxh.getLsh());
+				sjgl.setYbmca(gxh.getYbmca());
+				sjgl.setYbzda(gxh.getYbzda());
+				sjgl.setYbmcb(gxh.getYbmcb());
+				sjgl.setYbzdb(gxh.getYbzdb());
+				list.add(sjgl);
+			}
+			Iterator<XtpzSjglys> it = list.iterator();
+			while (it.hasNext()) {
+				XtpzSjglys sjgl = it.next();
+				if (firstFlag) {
+					sb.append(sjgl.getYbzda()).append(" = ").append(sjgl.getYbzdb());
+					firstFlag = false;
+				} else {
+					sb.append(" AND ").append(sjgl.getYbzda()).append(" = ").append(sjgl.getYbzdb());
+				}
+			}
+		}
+		return sb.toString();
+	}
+
+	@Override
 	@Cacheable("getAllConnectedGraphBySjzd")
 	public HashMap<String, HashMap<String, Integer>> getAllConnectedGraphBySjzd() {
 		HashMap<String, HashMap<String, Integer>> stepLength = new HashMap<String, HashMap<String, Integer>>();
@@ -333,6 +423,31 @@ public class DemoServiceImpl implements IDemoService {
 		example.setOrderByClause(" ybmca asc ");
 		List<XtpzSjglys> list = new ArrayList<XtpzSjglys>();
 		list = sjglDao.selectByExample(example);
+		String last = "", current = "";
+		for (int i = 0; i < list.size(); i++) {
+			String a = list.get(i).getYbmca();
+			current = a;
+			String b = list.get(i).getYbmcb();
+			if (!last.equals(current)) {
+				if ("".equals(last)) {
+					stepLength.put(current, step);
+				} else {
+					step = new HashMap<String, Integer>();
+					stepLength.put(current, step);
+				}
+			}
+			step.put(b, 1);
+			last = current;
+		}
+		return stepLength;
+	}
+
+	@Cacheable("getAllConnectedGraphBySjzd")
+	public HashMap<String, HashMap<String, Integer>> getAllConnectedGraphBySjzd(String operator) {
+		HashMap<String, HashMap<String, Integer>> stepLength = new HashMap<String, HashMap<String, Integer>>();
+		HashMap<String, Integer> step = new HashMap<String, Integer>();
+		List<XtpzSjglys> list = new ArrayList<XtpzSjglys>();
+		list = greenplumCommonDAOImpl.getXtpzSjglysInUnionMode(operator);
 		String last = "", current = "";
 		for (int i = 0; i < list.size(); i++) {
 			String a = list.get(i).getYbmca();

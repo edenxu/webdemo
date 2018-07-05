@@ -411,7 +411,6 @@
 			if (data.zdbm == null) {
 				return;
 			}
-			console.log(data.ybzd);
 			// 已经添加过的元素不允许重复加入
 			if (selectArray.indexOf(data.ybzd) == -1) {
 				selectArray.push(data.ybzd);
@@ -540,7 +539,6 @@
 			let paramsObject = new Object();
 			selectTables = new Array();
 			list.each(function(id, value) {
-				console.log($(value));
 				let obj = new Object();
 				obj.zdbm = $(value).attr('zdbm');
 				obj.ybmc = $(value).attr('ybmc');
@@ -569,7 +567,6 @@
 			paramsObject.groupFlag = groupMode;
 			paramsObject.saveFlag = saveFlag;
 			paramsObject.myTableName = myTableName;
-			console.log(paramsObject);
 			// 展示加载层
 			layer.load();
 			// 屏蔽查询按钮

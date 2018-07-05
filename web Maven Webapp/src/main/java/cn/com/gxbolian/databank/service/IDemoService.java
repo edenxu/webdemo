@@ -64,6 +64,8 @@ public interface IDemoService {
 	 */
 	public String makeUpSelectSQL(ParamsObject object);
 
+	public String makeUpSelectSQL(ParamsObject object, String operator);
+
 	/**
 	 * 根据统计查询所涉及的数据表，自动从表结构连通图中找出覆盖这些表的最短关联关系
 	 * 
@@ -72,6 +74,8 @@ public interface IDemoService {
 	 * @return 返回关联好的From 表清单 及 Where关联字段内容
 	 */
 	public String makeUpFromTablesAndColumnRelation(String[] tablesArray);
+
+	public String makeUpFromTablesAndColumnRelation(String[] tablesArray, String operator);
 
 	/**
 	 * 将拼凑的SQL语句查询结果写入到物理表，并将表名返回
@@ -133,6 +137,8 @@ public interface IDemoService {
 	 * @return 所有表的网络连通图结构
 	 */
 	public HashMap<String, HashMap<String, Integer>> getAllConnectedGraphBySjzd();
+
+	public HashMap<String, HashMap<String, Integer>> getAllConnectedGraphBySjzd(String operator);
 
 	/**
 	 * 获取下拉菜单主表数据信息

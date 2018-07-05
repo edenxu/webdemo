@@ -16,6 +16,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.jdbc.support.rowset.SqlRowSetMetaData;
 import org.springframework.stereotype.Repository;
 
+import cn.com.gxbolian.databank.entity.XtpzSjglys;
 import cn.com.gxbolian.databank.entity.XtpzSjy;
 import cn.com.gxbolian.databank.entity.XtpzSjzd;
 import cn.com.gxbolian.databank.entity.XtpzSjzdExample;
@@ -624,6 +625,21 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 		log.info("sql:" + sql);
 		@SuppressWarnings("rawtypes")
 		List<XtpzSjzd> list = jdbcTemplate.query(sql, param, new BeanPropertyRowMapper(XtpzSjzd.class));
+		return list;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<XtpzSjglys> getXtpzSjglysInUnionMode(String operator) {
+		String sql = "";
+		String[] param = new String[1];
+		param[0] = operator;
+		sql = "with temp as(select lsh,ybmca,ybzda,ybmcb,ybzdb from yxscdb.XTPZ_sjglys " + " union "
+				+ "select lsh,ybmca,ybzda,ybmcb,ybzdb from yxscdb.XTPZ_sjglys_gxh where czybm=?) "
+				+ " select * from temp order by ybmca ";
+		log.info("sql:" + sql);
+		@SuppressWarnings("rawtypes")
+		List<XtpzSjglys> list = jdbcTemplate.query(sql, param, new BeanPropertyRowMapper(XtpzSjglys.class));
 		return list;
 	}
 
