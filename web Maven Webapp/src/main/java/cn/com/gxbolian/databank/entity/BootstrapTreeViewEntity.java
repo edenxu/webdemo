@@ -22,6 +22,7 @@ public class BootstrapTreeViewEntity implements Serializable {
 	private String ybzd;
 	private String sjlx;
 	private String jhbz;
+	private String bz;
 
 	public String getText() {
 		return text;
@@ -109,6 +110,18 @@ public class BootstrapTreeViewEntity implements Serializable {
 
 	public void setJhbz(String jhbz) {
 		this.jhbz = jhbz;
+	}
+
+	public String getBz() {
+		return bz;
+	}
+
+	public void setBz(String bz) {
+		this.bz = bz;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
 	}
 
 }

@@ -72,7 +72,9 @@ public class CommonUtil {
 		for (int i = 0; i < j; i++) {
 			/** 源表字段非空的情况下才放到SELECT字段列表，因为部分因Where条件拓展引入的数据表只有表名称、无字段，并且是不需要字段展示的，需要排除掉 */
 			if (null != list.get(i).getYbzd() && !"".equals(list.get(i).getYbzd())) {
-				sb.append(list.get(i).getYbzd()).append(" AS \"").append(list.get(i).getYbzd()).append("\",");
+				// 将字段名中的单个双引号转义为两个双引号
+				//sb.append(list.get(i).getYbzd()).append(" AS \"").append(list.get(i).getYbzd()).append("\",");
+				sb.append(list.get(i).getYbzd()).append(" AS \"").append(list.get(i).getYbzd().replaceAll("\"", "\"\"")).append("\",");
 			}
 		}
 		return sb.toString();

@@ -60,7 +60,8 @@ public class DemoWebController {
 	@ResponseBody
 	public BootstrapTreeViewEntity getSjyByExample(HttpServletRequest request, HttpServletResponse response) {
 		String flbm = request.getParameter("zdbm") == null ? "000" : request.getParameter("zdbm");
-		return demoService.getNodeInfoForBootstrapTreeviewEntity(flbm);
+		// return demoService.getNodeInfoForBootstrapTreeviewEntity(flbm);
+		return demoService.getNodeInfoForBootstrapTreeviewEntity(flbm, "admin");
 	}
 
 	@RequestMapping(value = "getSjyByExampleZTree", produces = "application/json;charset=utf-8", method = {
@@ -79,17 +80,18 @@ public class DemoWebController {
 		Map<String, Object> map = new HashMap<String, Object>();
 		String makeupSQL = demoService.makeUpSelectSQL(object);
 		log.info("当前结果集对应的SQL语句为:" + makeupSQL);
+
 		String tableName = demoService.createTableAsSelectSQL(makeupSQL);
 		// 获取新数据集的元数据信息
-		List<Map<String, Object>> resultMeta = demoService.getTableColumnNameAndDescription(tableName);
+		List<Map<String, Object>> resultMeta = demoService.getTableColumnNameAndDescription(tableName, "admin");
 		// 数据结果集在分析处理
 		if ("Y".equals(object.getSaveFlag())) {
 			// 1. 写入数据集基础信息
 			demoService.insertAutoGenerateTableInfo(tableName, object.getMyTableName(), "admin", "N");
 			// 2. 写入数据个性化数据字典
-			demoService.insertPersonalDirectory("admin", tableName, resultMeta);
+			demoService.insertPersonalDirectory("admin", tableName, object.getMyTableName(), resultMeta);
 			// 3. 将数据集放入个性化的关系图中
-			demoService.insertPersonalGridInfo("admin", resultMeta);
+			demoService.insertPersonalGridInfo("admin", tableName, resultMeta);
 		} else {
 			// 1. 写入数据集基础信息
 			demoService.insertAutoGenerateTableInfo(tableName, object.getMyTableName(), "admin", "T");
@@ -110,7 +112,7 @@ public class DemoWebController {
 		String orderByColumn = request.getParameter("sort") == null ? "" : request.getParameter("sort");
 		String orderByMode = request.getParameter("order") == null ? "asc" : request.getParameter("order");
 		Map<String, Object> map = demoService.getDataForBootstrapDataTable(tableName, "", "", orderByColumn,
-				orderByMode, limit, offset);
+				orderByMode, limit, offset, "admin");
 		map.put("tableName", tableName);
 		return map;
 	}
@@ -119,9 +121,9 @@ public class DemoWebController {
 			RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
 	public Map<String, Object> getColumnDropDownList(HttpServletRequest request, HttpServletResponse response) {
-		String zdbm = request.getParameter("zdbm") == null ? "" : request.getParameter("zdbm");
+		String bz = request.getParameter("bz") == null ? "" : request.getParameter("bz");
 		XtpzXlcs xlcs = new XtpzXlcs();
-		xlcs.setZdbm(zdbm);
+		xlcs.setZdbm(bz);
 		List<XtpzXlcs> list = demoService.getXtpzXlcsListByExample(xlcs);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("result", list);
@@ -143,15 +145,15 @@ public class DemoWebController {
 		int fileRecordSize = 50000;
 		// 如果记录数少于50000条，则直接导出
 		if (totalRows <= fileRecordSize) {
-			List<Map<String, Object>> head = demoService.getTableColumnNameAndDescription(tableName);
+			List<Map<String, Object>> head = demoService.getTableColumnNameAndDescription(tableName, "admin");
 			List<List<Map<String, Object>>> body = demoService.getDataForBootstrapDataTableToExport(tableName, "", "",
-					"", "", "99999999", "0");
+					"", "", "99999999", "0", "admin");
 			fileName = CommonUtil.exportDataToExcel(head, body);
 			head = null;
 			body = null;
 			map.put("fileName", fileName);
 		} else {
-			List<Map<String, Object>> head = demoService.getTableColumnNameAndDescription(tableName);
+			List<Map<String, Object>> head = demoService.getTableColumnNameAndDescription(tableName, "admin");
 			String preFileName = UUID.randomUUID().toString().replace("-", "").toLowerCase();
 			fileName = preFileName + "-template.xlsx";
 			// 创建文件
@@ -162,7 +164,7 @@ public class DemoWebController {
 			List<List<Map<String, Object>>> body = null;
 			for (long i = 0; i <= totalRows; i += fileRecordSize) {
 				body = demoService.getDataForBootstrapDataTableToExport(tableName, "", "", "", "",
-						String.valueOf(fileRecordSize), String.valueOf(i));
+						String.valueOf(fileRecordSize), String.valueOf(i), "admin");
 				CommonUtil.exportDataToExcelBody(templateFileName, fileIndex++, body);
 				body.clear();
 			}

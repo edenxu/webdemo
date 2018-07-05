@@ -411,10 +411,11 @@
 			if (data.zdbm == null) {
 				return;
 			}
+			console.log(data.ybzd);
 			// 已经添加过的元素不允许重复加入
 			if (selectArray.indexOf(data.ybzd) == -1) {
 				selectArray.push(data.ybzd);
-				let newNode = $('<li jhbz="' + data.jhbz + '" zdmc="' + data.zdmc + '" zdbm="' + data.zdbm + '" ybzd="' + data.ybzd + '" ybmc="' + data.ybmc + '" sjlx="' + data.sjlx + '" ondblclick="deleteSelectNode(this)" class="btn btn-primary btn-sm" style="margin:2px;">' + data.zdmc + '</li>');
+				let newNode = $('<li jhbz="' + data.jhbz + '" bz="' + data.bz + '" zdmc="' + data.zdmc + '" zdbm="' + data.zdbm + '" ybzd=\'' + data.ybzd + '\' ybmc="' + data.ybmc + '" sjlx="' + data.sjlx + '" ondblclick="deleteSelectNode(this)" class="btn btn-primary btn-sm" style="margin:2px;">' + data.zdmc + '</li>');
 				$("#sortablefield").append(newNode);
 				if (selectArray.length > 0) {
 					$('#queryfields').removeClass('searchColumn');
@@ -517,7 +518,6 @@
 			if (typeof saveFlag !== 'undefined') {
 				saveFlag = 'Y';
 				myTableName = $('#myTableName').val();
-				console.log(myTableName);
 				if (myTableName === '') {
 					layer.alert('为了进行结果集再分析，需要给当前的结果集定义一个别名.');
 					return;
@@ -540,6 +540,7 @@
 			let paramsObject = new Object();
 			selectTables = new Array();
 			list.each(function(id, value) {
+				console.log($(value));
 				let obj = new Object();
 				obj.zdbm = $(value).attr('zdbm');
 				obj.ybmc = $(value).attr('ybmc');
@@ -568,7 +569,7 @@
 			paramsObject.groupFlag = groupMode;
 			paramsObject.saveFlag = saveFlag;
 			paramsObject.myTableName = myTableName;
-			// console.log(paramsObject);
+			console.log(paramsObject);
 			// 展示加载层
 			layer.load();
 			// 屏蔽查询按钮
@@ -583,7 +584,6 @@
 				dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
 				success : function(data, textStatus, jqXHR) {
 					var columns = data.columns;
-					console.log(columns);
 					columsArray = [];
 					// 给表头字段添加辅助属性
 					for (var i = 0; i < columns.length; i++) {
@@ -672,7 +672,7 @@
 			let innerHTML = '<div class="whereClauseColumn form-inline">';
 			let temp = optionBefore + '<select class="form-control" onChange="refreshInputDataType(this)" ><option value="none">-----选择字段-----</option>';
 			list.each(function(id, value) {
-				temp += "<option value='" + $(value).attr('ybzd') + "." + $(value).attr('jhbz') + "." + $(value).attr('sjlx') + "' zdbm='" + $(value).attr('zdbm') + "'>" + $(value).attr('zdmc') + "</option>";
+				temp += "<option value='" + $(value).attr('ybzd') + "." + $(value).attr('jhbz') + "." + $(value).attr('sjlx') + "' zdbm='" + $(value).attr('zdbm') + "' bz='" + $(value).attr('bz') + "'>" + $(value).attr('zdmc') + "</option>";
 			});
 			innerHTML += temp + '</select>' + optionString;
 			let tempValue = "<input type=text class='form-control'/>";
@@ -778,14 +778,14 @@
 	
 		// 更新
 		function refreshInputDataType(value) {
-			let zdbm = $(value).find("option:selected").attr("zdbm");
+			let bz = $(value).find("option:selected").attr("bz");
 			$.ajax({
 				url : 'getColumnDropDownList',
 				type : 'POST', //GET
 				contentType : 'application/x-www-form-urlencoded',
 				async : true, //或false,是否异步
 				data : {
-					zdbm : zdbm,
+					bz : bz,
 				},
 				//timeout : 5000, //超时时间
 				dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text

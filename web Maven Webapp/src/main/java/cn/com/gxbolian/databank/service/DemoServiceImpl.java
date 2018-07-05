@@ -22,7 +22,9 @@ import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
 
 import cn.com.gxbolian.databank.dao.IGreenplumCommonDAO;
+import cn.com.gxbolian.databank.dao.XtpzSjglysGxhMapper;
 import cn.com.gxbolian.databank.dao.XtpzSjglysMapper;
+import cn.com.gxbolian.databank.dao.XtpzSjyGxhMapper;
 import cn.com.gxbolian.databank.dao.XtpzSjyMapper;
 import cn.com.gxbolian.databank.dao.XtpzSjzdGxhMapper;
 import cn.com.gxbolian.databank.dao.XtpzSjzdMapper;
@@ -33,8 +35,10 @@ import cn.com.gxbolian.databank.entity.BootstrapTreeViewEntity;
 import cn.com.gxbolian.databank.entity.ParamsObject;
 import cn.com.gxbolian.databank.entity.XtpzSjglys;
 import cn.com.gxbolian.databank.entity.XtpzSjglysExample;
+import cn.com.gxbolian.databank.entity.XtpzSjglysGxh;
 import cn.com.gxbolian.databank.entity.XtpzSjy;
 import cn.com.gxbolian.databank.entity.XtpzSjyExample;
+import cn.com.gxbolian.databank.entity.XtpzSjyGxh;
 import cn.com.gxbolian.databank.entity.XtpzSjzd;
 import cn.com.gxbolian.databank.entity.XtpzSjzdExample;
 import cn.com.gxbolian.databank.entity.XtpzSjzdGxh;
@@ -63,6 +67,10 @@ public class DemoServiceImpl implements IDemoService {
 	private XtpzTableGxhMapper tablegxhDao;
 	@Autowired
 	private XtpzSjzdGxhMapper sjzdGxhDao;
+	@Autowired
+	private XtpzSjyGxhMapper sjyGxhDao;
+	@Autowired
+	private XtpzSjglysGxhMapper sjglGxhDao;
 	@Autowired
 	private IGreenplumCommonDAO greenplumCommonDAOImpl;
 
@@ -187,6 +195,40 @@ public class DemoServiceImpl implements IDemoService {
 				mc.setYbmc(sjzd.getYbmc());
 				mc.setYbzd(sjzd.getYbzd());
 				mc.setSjybm(sjzd.getSjybm());
+				mc.setBz(sjzd.getBz());
+				m.getNodes().add(mc);
+			}
+			entity.getNodes().add(m);
+		}
+		return entity;
+	}
+
+	@Override
+	public BootstrapTreeViewEntity getNodeInfoForBootstrapTreeviewEntity(String nodeId, String operator) {
+		XtpzSjy result = greenplumCommonDAOImpl.getXtpzSjyInUnionMode(nodeId, operator, "1").get(0);
+		BootstrapTreeViewEntity entity = new BootstrapTreeViewEntity();
+		entity.setText(result.getSjymc());
+		entity.setSjybm(result.getSjybm());
+		List<XtpzSjy> sjyList = greenplumCommonDAOImpl.getXtpzSjyInUnionMode(result.getSjybm(), operator, "2");
+		for (XtpzSjy temp : sjyList) {
+			BootstrapTreeViewEntity m = getNodeInfoForBootstrapTreeviewEntity(temp.getSjybm(), operator); // 递归
+			m.setText(temp.getSjymc());
+			m.setSjybm(temp.getSjybm());
+			// 为每一个节点下挂数据字典中配置的相关统计指标
+			List<XtpzSjzd> sjzdList = new ArrayList<XtpzSjzd>();
+			sjzdList = greenplumCommonDAOImpl.getXtpzSjzdInUnionMode(temp.getSjybm(), operator, "1");
+			for (XtpzSjzd sjzd : sjzdList) {
+				BootstrapTreeViewEntity mc = new BootstrapTreeViewEntity();
+				mc.setText(sjzd.getZdmc());
+				mc.setSjybm(sjzd.getSjybm());
+				mc.setZdbm(sjzd.getZdbm());
+				mc.setZdmc(sjzd.getZdmc());
+				mc.setJhbz(sjzd.getJhbz());
+				mc.setSjlx(sjzd.getSjlx());
+				mc.setYbmc(sjzd.getYbmc());
+				mc.setYbzd(sjzd.getYbzd());
+				mc.setSjybm(sjzd.getSjybm());
+				mc.setBz(sjzd.getBz());
 				m.getNodes().add(mc);
 			}
 			entity.getNodes().add(m);
@@ -213,11 +255,31 @@ public class DemoServiceImpl implements IDemoService {
 		return map;
 	}
 
+	@Cacheable("getDataForBootstrapDataTable")
+	public Map<String, Object> getDataForBootstrapDataTable(String tableName, String columns, String condition,
+			String orderByColumn, String orderByMode, String limit, String offset, String operator) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		long rowcount = greenplumCommonDAOImpl.getTableRowcountByCondition(tableName, condition);
+		List<Map<String, Object>> list = greenplumCommonDAOImpl.getTableDataByConditionTransforColumns(tableName,
+				columns, condition, orderByColumn, orderByMode, limit, offset, operator);
+		map.put("total", rowcount);
+		map.put("rows", list);
+		return map;
+	}
+
 	@Override
 	@Cacheable("getTableColumnNameAndDescription")
 	public List<Map<String, Object>> getTableColumnNameAndDescription(String tableName) {
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		list = greenplumCommonDAOImpl.getTableColumnNameAndDescription(tableName);
+		return list;
+	}
+
+	@Override
+	@Cacheable("getTableColumnNameAndDescription")
+	public List<Map<String, Object>> getTableColumnNameAndDescription(String tableName, String operator) {
+		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+		list = greenplumCommonDAOImpl.getTableColumnNameAndDescription(tableName, operator);
 		return list;
 	}
 
@@ -336,22 +398,51 @@ public class DemoServiceImpl implements IDemoService {
 	}
 
 	@Override
+	public List<List<Map<String, Object>>> getDataForBootstrapDataTableToExport(String tableName, String columns,
+			String condition, String orderByColumn, String orderByMode, String limit, String offset, String operator) {
+		List<List<Map<String, Object>>> list = greenplumCommonDAOImpl.getTableDataByConditionTransforColumnsSorted(
+				tableName, columns, condition, orderByColumn, orderByMode, limit, offset, operator);
+		return list;
+	}
+
+	@Override
 	@Cacheable("getTotoalRowcountByTableName")
 	public long getTotoalRowcountByTableName(String tableName) {
 		return greenplumCommonDAOImpl.getTableRowcountByCondition(tableName, "");
 	}
 
 	@Override
-	public void insertPersonalGridInfo(String opertor, List<Map<String, Object>> resultMeta) {
-		XtpzTableGxh tableGxh = new XtpzTableGxh();
+	public void insertPersonalGridInfo(String opertor, String tableName, List<Map<String, Object>> resultMeta) {
 		IdWorker id = new IdWorker(2);
-		tableGxh.setLsh(String.valueOf(id.nextId()));
-		resultMeta.forEach(item -> {
-			for (Entry<String, Object> entry : item.entrySet()) {
-
+		Iterator<Map<String, Object>> it = resultMeta.iterator();
+		while (it.hasNext()) {
+			Map<String, Object> map = it.next();
+			for (Entry<String, Object> entry : map.entrySet()) {
+				if ("field".equals(entry.getKey())) {
+					XtpzSjglysGxh mySjglys = new XtpzSjglysGxh();
+					String ybzdb = entry.getValue().toString();
+					mySjglys.setLsh(String.valueOf(id.nextId()));
+					mySjglys.setYbmca(tableName);
+					mySjglys.setYbzda(tableName + ".\"" + ybzdb + "\"");
+					mySjglys.setYbmcb(ybzdb.substring(0, ybzdb.lastIndexOf(".")));
+					mySjglys.setYbzdb(ybzdb);
+					mySjglys.setCzybm(opertor);
+					sjglGxhDao.insert(mySjglys);
+					mySjglys = new XtpzSjglysGxh();
+					mySjglys.setLsh(String.valueOf(id.nextId()));
+					mySjglys.setYbmcb(tableName);
+					mySjglys.setYbzdb(tableName + ".\"" + ybzdb + "\"");
+					mySjglys.setYbmca(ybzdb.substring(0, ybzdb.lastIndexOf(".")));
+					mySjglys.setYbzda(ybzdb);
+					mySjglys.setCzybm(opertor);
+					sjglGxhDao.insert(mySjglys);
+				}
+				// 只写一组关联关系即可
+				break;
 			}
-		});
-		tablegxhDao.insert(tableGxh);
+			// 只写一组关联关系即可
+			break;
+		}
 	}
 
 	@Override
@@ -379,8 +470,16 @@ public class DemoServiceImpl implements IDemoService {
 	}
 
 	@Override
-	public void insertPersonalDirectory(String opertor, String tableName, List<Map<String, Object>> resultMeta) {
+	public void insertPersonalDirectory(String operator, String tableName, String tableNickName,
+			List<Map<String, Object>> resultMeta) {
 		IdWorker id = new IdWorker(2);
+		XtpzSjyGxh mySjy = new XtpzSjyGxh();
+		String sjybm = String.valueOf(id.nextId());
+		mySjy.setSjybm(sjybm);
+		mySjy.setSjymc(tableNickName);
+		mySjy.setFlbm("999");
+		mySjy.setCzybm(operator);
+		sjyGxhDao.insert(mySjy);
 		resultMeta.forEach(item -> {
 			for (Entry<String, Object> entry : item.entrySet()) {
 				if ("field".equals(entry.getKey())) {
@@ -390,13 +489,14 @@ public class DemoServiceImpl implements IDemoService {
 					XtpzSjzdGxh gxhSjzd = new XtpzSjzdGxh();
 					gxhSjzd.setZdbm(String.valueOf(id.nextId()));
 					// 个性化数据域
-					gxhSjzd.setSjybm("999");
+					gxhSjzd.setSjybm(sjybm);
 					gxhSjzd.setZdmc(sjzd.getZdmc());
 					gxhSjzd.setYbmc(tableName);
 					gxhSjzd.setYbzd(tableName + ".\"" + entry.getValue().toString() + "\"");
 					gxhSjzd.setSjlx(sjzd.getSjlx());
 					gxhSjzd.setJhbz("N");
-					gxhSjzd.setCzybm(opertor);
+					gxhSjzd.setCzybm(operator);
+					gxhSjzd.setBz(sjzd.getBz());
 					sjzdGxhDao.insert(gxhSjzd);
 				}
 			}

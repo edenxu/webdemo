@@ -3,6 +3,9 @@ package cn.com.gxbolian.databank.dao;
 import java.util.List;
 import java.util.Map;
 
+import cn.com.gxbolian.databank.entity.XtpzSjy;
+import cn.com.gxbolian.databank.entity.XtpzSjzd;
+
 public interface IGreenplumCommonDAO {
 
 	/**
@@ -57,6 +60,17 @@ public interface IGreenplumCommonDAO {
 	public List<Map<String, Object>> getTableColumnNameAndDescription(String tableName);
 
 	/**
+	 * 获取【全局+个性化】数据表的字段映射描述，用于前台展示
+	 * 
+	 * @param tableName
+	 *            数据表名
+	 * @param operator
+	 *            操作员
+	 * @return 映射结果
+	 */
+	public List<Map<String, Object>> getTableColumnNameAndDescription(String tableName, String operator);
+
+	/**
 	 * 根据表名Drop掉存储数据的表
 	 * 
 	 * @param tableName
@@ -67,6 +81,7 @@ public interface IGreenplumCommonDAO {
 	/**
 	 * 获取特定表的相关数据信息[对存在编码的字段转换成实际显示值][字段顺序为随机，不是按Select语句的顺序]
 	 * [主要用于Bootstrap-table前台展示]
+	 * 
 	 * @param tableName
 	 *            表名
 	 * @param columns
@@ -85,9 +100,13 @@ public interface IGreenplumCommonDAO {
 	 */
 	public List<Map<String, Object>> getTableDataByConditionTransforColumns(String tableName, String columns,
 			String condition, String orderByColumn, String orderByMode, String limit, String offset);
+
+	public List<Map<String, Object>> getTableDataByConditionTransforColumns(String tableName, String columns,
+			String condition, String orderByColumn, String orderByMode, String limit, String offset, String operator);
+
 	/**
-	 * 获取特定表的相关数据信息[对存在编码的字段转换成实际显示值][字段顺序为按Select语句的顺序]
-	 * [主要用于数据导出]
+	 * 获取特定表的相关数据信息[对存在编码的字段转换成实际显示值][字段顺序为按Select语句的顺序] [主要用于数据导出]
+	 * 
 	 * @param tableName
 	 *            表名
 	 * @param columns
@@ -104,7 +123,37 @@ public interface IGreenplumCommonDAO {
 	 *            提取数据起始位置
 	 * @return 数据结果集
 	 */
-	public List<List<Map<String, Object>>> getTableDataByConditionTransforColumnsSorted(String tableName, String columns,
-			String condition, String orderByColumn, String orderByMode, String limit, String offset);
+	public List<List<Map<String, Object>>> getTableDataByConditionTransforColumnsSorted(String tableName,
+			String columns, String condition, String orderByColumn, String orderByMode, String limit, String offset);
+
+	public List<List<Map<String, Object>>> getTableDataByConditionTransforColumnsSorted(String tableName,
+			String columns, String condition, String orderByColumn, String orderByMode, String limit, String offset,
+			String operator);
+
+	/**
+	 * 从全局及个性化数据域的并集中查询数据域信息
+	 * 
+	 * @param sjy
+	 *            查询条件封装对象
+	 * @param operator
+	 *            操作员
+	 * @param mode
+	 *            1. 根据sjybm查 2. 根据flbm查
+	 * @return 结果清单
+	 */
+	public List<XtpzSjy> getXtpzSjyInUnionMode(String queryValue, String operator, String mode);
+
+	/**
+	 * 从全局及个性化数据字典的并集中查询数据域信息
+	 * 
+	 * @param sjy
+	 *            查询条件封装对象
+	 * @param operator
+	 *            操作员
+	 * @param mode
+	 *            1. 根据sjybm查 2. 根据ybzd查
+	 * @return 结果清单
+	 */
+	public List<XtpzSjzd> getXtpzSjzdInUnionMode(String queryValue, String operator, String mode);
 
 }

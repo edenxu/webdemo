@@ -47,6 +47,15 @@ public interface IDemoService {
 	public BootstrapTreeViewEntity getNodeInfoForBootstrapTreeviewEntity(String nodeId);
 
 	/**
+	 * 根据节点编号获取该节点下的树形信息
+	 * 
+	 * @param nodeId
+	 * 
+	 * @return
+	 */
+	public BootstrapTreeViewEntity getNodeInfoForBootstrapTreeviewEntity(String nodeId, String operator);
+
+	/**
 	 * 根据传递过来的参数动态拼装成用户所需数据集的SQL语句
 	 * 
 	 * @param object
@@ -95,6 +104,9 @@ public interface IDemoService {
 	public Map<String, Object> getDataForBootstrapDataTable(String tableName, String columns, String condition,
 			String orderByColumn, String orderByMode, String limit, String offset);
 
+	public Map<String, Object> getDataForBootstrapDataTable(String tableName, String columns, String condition,
+			String orderByColumn, String orderByMode, String limit, String offset, String operator);
+
 	/**
 	 * 获取数据表的字段名及中文描述信息【用于动态加载前端页面Bootstrap的表头】
 	 * 
@@ -103,6 +115,17 @@ public interface IDemoService {
 	 * @return 字段信息集合
 	 */
 	public List<Map<String, Object>> getTableColumnNameAndDescription(String tableName);
+
+	/**
+	 * 获取数据表的字段名及中文描述信息【用于动态加载前端页面Bootstrap的表头】
+	 * 
+	 * @param tableName
+	 *            表名
+	 * @param operator
+	 *            操作员
+	 * @return 字段信息集合
+	 */
+	public List<Map<String, Object>> getTableColumnNameAndDescription(String tableName, String operator);
 
 	/**
 	 * 获取数据字典中所有表的网络连通图结构
@@ -149,6 +172,9 @@ public interface IDemoService {
 	public List<List<Map<String, Object>>> getDataForBootstrapDataTableToExport(String tableName, String columns,
 			String condition, String orderByColumn, String orderByMode, String limit, String offset);
 
+	public List<List<Map<String, Object>>> getDataForBootstrapDataTableToExport(String tableName, String columns,
+			String condition, String orderByColumn, String orderByMode, String limit, String offset, String operator);
+
 	/**
 	 * 根据表名获取该数据表的总记录数
 	 * 
@@ -163,10 +189,12 @@ public interface IDemoService {
 	 * 
 	 * @param opertor
 	 *            操作员ID
+	 * @param tableName
+	 *            表名
 	 * @param resultMeta
 	 *            新数据集的元数据信息
 	 */
-	public void insertPersonalGridInfo(String opertor, List<Map<String, Object>> resultMeta);
+	public void insertPersonalGridInfo(String opertor, String tableName, List<Map<String, Object>> resultMeta);
 
 	/**
 	 * 记录自动创建表的相关基本信息【创建人、表名、别名、有效时间，状态等】
@@ -192,7 +220,8 @@ public interface IDemoService {
 	 * @param resultMeta
 	 *            结果集元数据
 	 */
-	public void insertPersonalDirectory(String opertor, String tableName, List<Map<String, Object>> resultMeta);
+	public void insertPersonalDirectory(String operator, String tableName, String tableNickName,
+			List<Map<String, Object>> resultMeta);
 
 	/**
 	 * 写入数据表关联信息

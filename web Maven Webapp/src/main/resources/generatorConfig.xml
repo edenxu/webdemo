@@ -60,8 +60,6 @@
 		<!-- 指定列的java数据类型 -->
 		<!-- <columnOverride column="LONG_VARCHAR_FIELD" jdbcType="VARCHAR" /> -->
 		<!-- </table> -->
-		<table tableName="XTPZ_SJZD_GXH"></table>
-		<table tableName="XTPZ_SJGLYS_GXH"></table>
-		<table tableName="XTPZ_TABLE_GXH"></table>
+		<table tableName="XTPZ_SJY_GXH"></table>
 	</context>
 </generatorConfiguration>  
