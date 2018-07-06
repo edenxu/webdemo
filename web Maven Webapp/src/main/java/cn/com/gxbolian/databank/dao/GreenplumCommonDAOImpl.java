@@ -49,6 +49,12 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 	}
 
 	@Override
+	public void createTableAsSelectSQL(String tableName, String sql) {
+		String executeSql = "CREATE TABLE " + tableName + " AS " + sql;
+		this.jdbcTemplate.update(executeSql);
+	}
+
+	@Override
 	public long getTableRowcountByCondition(String tableName, String condition) {
 		String sql = "SELECT COUNT(1) FROM " + tableName + " ";
 		if (!"".equals(condition)) {
@@ -126,7 +132,11 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
 		for (int i = 1; i <= columnNum; i++) {
 			String columnName = sqlRsmd.getColumnName(i);
-			List<XtpzSjzd> list = this.getXtpzSjzdInUnionMode(columnName, operator, "2");
+			// List<XtpzSjzd> list = this.getXtpzSjzdInUnionMode(columnName,
+			// operator, "2");
+			log.info("------:" + (tableName + "." + columnName).toUpperCase());
+			List<XtpzSjzd> list = this.getXtpzSjzdInUnionMode((tableName + "." + columnName).toUpperCase(), operator,
+					"2");
 			Map<String, Object> temp = new HashMap<String, Object>();
 			temp.put("field", columnName);
 			temp.put("title", list.get(0).getZdmc());
@@ -269,7 +279,8 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 		// 获取当前数据结果集的字段列表
 		List<String> columnList = new ArrayList<String>();
 		for (int i = 1; i <= columnNum; i++) {
-			columnList.add(sqlRsmd.getColumnName(i));
+			// 需要转换成大写，因为数据字典里配置的时大写，但是查询结果返回的字段内容为小写
+			columnList.add(tableName + "." + sqlRsmd.getColumnName(i).toUpperCase());
 		}
 		/**
 		 * 找出当前数据集相关字段中所有涉及下拉的字段 并对字段中的值进行下拉显示值的转换
@@ -495,7 +506,7 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 		// 获取当前数据结果集的字段列表
 		List<String> columnList = new ArrayList<String>();
 		for (int i = 1; i <= columnNum; i++) {
-			columnList.add(sqlRsmd.getColumnName(i));
+			columnList.add(tableName + "." + sqlRsmd.getColumnName(i).toUpperCase());
 		}
 		/**
 		 * 找出当前数据集相关字段中所有涉及下拉的字段 并对字段中的值进行下拉显示值的转换

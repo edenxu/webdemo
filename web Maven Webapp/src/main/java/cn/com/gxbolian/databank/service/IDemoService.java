@@ -64,7 +64,7 @@ public interface IDemoService {
 	 */
 	public String makeUpSelectSQL(ParamsObject object);
 
-	public String makeUpSelectSQL(ParamsObject object, String operator);
+	public String makeUpSelectSQL(String tableName, ParamsObject object, String operator);
 
 	/**
 	 * 根据统计查询所涉及的数据表，自动从表结构连通图中找出覆盖这些表的最短关联关系
@@ -85,6 +85,8 @@ public interface IDemoService {
 	 * @return 返回写入数据表的表名
 	 */
 	public String createTableAsSelectSQL(String sql);
+
+	public void createTableAsSelectSQL(String tableName,String sql);
 
 	/**
 	 * 获取特定表的相关数据信息
@@ -230,6 +232,17 @@ public interface IDemoService {
 			List<Map<String, Object>> resultMeta);
 
 	/**
+	 * 生成个性化的数据域信息
+	 * 
+	 * @param operator
+	 *            操作员
+	 * @param tableNickName
+	 *            数据域别名
+	 * @return
+	 */
+	public String insertPersonalDomain(String operator, String tableNickName);
+
+	/**
 	 * 写入数据表关联信息
 	 * 
 	 * @param tableA
@@ -244,5 +257,18 @@ public interface IDemoService {
 	 *            插入类型：[G:全局;P:个性化]
 	 */
 	public void insertTablsRelationToGrid(String tableA, String columnA, String tableB, String columnB, String type);
+
+	/**
+	 * 生成Select部分的内容，在过程中重定义字段名并写入个性化数据字典
+	 * 
+	 * @param tableName
+	 *            新自动生成的数据表名
+	 * @param list
+	 *            字段列表
+	 * @param operator
+	 *            操作员
+	 * @return
+	 */
+	public String pickUpSelectedColumns(String tableName, String tableNickName, List<XtpzSjzd> list, String operator);
 
 }

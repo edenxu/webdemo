@@ -166,14 +166,18 @@ public class DemoServiceImpl implements IDemoService {
 	}
 
 	@Override
-	public String makeUpSelectSQL(ParamsObject object, String operator) {
+	public String makeUpSelectSQL(String tableName, ParamsObject object, String operator) {
 		String selectColumns = "";
 		StringBuffer sb = new StringBuffer();
 		// 获取读取字段所涉及的相关数据表【经过去重处理】
 		String[] tableArray = CommonUtil.TableListDuplicateRemoval(object.getSelectTables());
 		log.info("tableArray:" + new Gson().toJson(tableArray));
 		// 获取需要查询的字段内容
-		selectColumns = CommonUtil.pickUpSelectedColumns(object.getSelectTables());
+		// selectColumns =
+		// CommonUtil.pickUpSelectedColumns(object.getSelectTables());
+
+		String tableNickName = object.getMyTableName();
+		selectColumns = this.pickUpSelectedColumns(tableName, tableNickName, object.getSelectTables(), operator);
 		selectColumns = selectColumns.substring(0, selectColumns.length() - 1);
 		String fromTablesAndRelation = makeUpFromTablesAndColumnRelation(tableArray, operator);
 
@@ -276,6 +280,10 @@ public class DemoServiceImpl implements IDemoService {
 	public String createTableAsSelectSQL(String sql) {
 		String tableName = greenplumCommonDAOImpl.createTableAsSelectSQL(sql);
 		return tableName;
+	}
+
+	public void createTableAsSelectSQL(String tableName, String sql) {
+		greenplumCommonDAOImpl.createTableAsSelectSQL(tableName, sql);
 	}
 
 	@Override
@@ -556,7 +564,7 @@ public class DemoServiceImpl implements IDemoService {
 			}
 		}
 		// 写入自定义关系网络
-		//ybzd = ybzd.replaceAll("\"", "\"\"");
+		// ybzd = ybzd.replaceAll("\"", "\"\"");
 		XtpzSjglysGxh mySjglys = new XtpzSjglysGxh();
 		mySjglys.setLsh(String.valueOf(id.nextId()));
 		mySjglys.setYbmca(tableName);
@@ -603,13 +611,7 @@ public class DemoServiceImpl implements IDemoService {
 	public void insertPersonalDirectory(String operator, String tableName, String tableNickName,
 			List<Map<String, Object>> resultMeta) {
 		IdWorker id = new IdWorker(2);
-		XtpzSjyGxh mySjy = new XtpzSjyGxh();
-		String sjybm = String.valueOf(id.nextId());
-		mySjy.setSjybm(sjybm);
-		mySjy.setSjymc(tableNickName);
-		mySjy.setFlbm("999");
-		mySjy.setCzybm(operator);
-		sjyGxhDao.insert(mySjy);
+		String sjybm = insertPersonalDomain(operator, tableNickName);
 		resultMeta.forEach(item -> {
 			for (Entry<String, Object> entry : item.entrySet()) {
 				if ("field".equals(entry.getKey())) {
@@ -633,9 +635,89 @@ public class DemoServiceImpl implements IDemoService {
 	}
 
 	@Override
+	public String insertPersonalDomain(String operator, String tableNickName) {
+		IdWorker id = new IdWorker(2);
+		XtpzSjyGxh mySjy = new XtpzSjyGxh();
+		String sjybm = String.valueOf(id.nextId());
+		mySjy.setSjybm(sjybm);
+		mySjy.setSjymc(tableNickName);
+		mySjy.setFlbm("999");
+		mySjy.setCzybm(operator);
+		sjyGxhDao.insert(mySjy);
+		return sjybm;
+	}
+
+	@Override
 	public void insertTablsRelationToGrid(String tableA, String columnA, String tableB, String columnB, String type) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public String pickUpSelectedColumns(String tableName, String tableNickName, List<XtpzSjzd> list, String operator) {
+		int j = list.size();
+		StringBuffer sb = new StringBuffer();
+		// 生成个性化数据域信息
+		String sjybm = insertPersonalDomain(operator, tableNickName);
+		IdWorker id = new IdWorker(2);
+		String ybzd = "", glbm = "", glzd = "";
+		boolean continueFind = true;
+		sb.append("SELECT DISTINCT ");
+		for (int i = 0; i < j; i++) {
+			/** 源表字段非空的情况下才放到SELECT字段列表，因为部分因Where条件拓展引入的数据表只有表名称、无字段，并且是不需要字段展示的，需要排除掉 */
+			if (null != list.get(i).getYbzd() && !"".equals(list.get(i).getYbzd())) {
+				// sb.append(list.get(i).getYbzd()).append(" AS
+				// \"").append(list.get(i).getYbzd()).append("\",");
+				sb.append(list.get(i).getYbzd()).append(" AS ").append("C" + i).append(",");
+				if (continueFind) {
+					ybzd = "C" + i;
+					glbm = list.get(i).getYbmc();
+					glzd = list.get(i).getYbzd();
+				}
+				XtpzSjzdGxhExample sjzdGxhExample = new XtpzSjzdGxhExample();
+				sjzdGxhExample.createCriteria().andYbzdEqualTo(glzd).andCzybmEqualTo(operator);
+				// 从自定义
+				if (sjzdGxhDao.selectByExample(sjzdGxhExample).size() > 0) {
+					continueFind = false;
+				}
+				
+
+				// 生成个性化数据字典信息
+				XtpzSjzd sjzd = this.greenplumCommonDAOImpl.getXtpzSjzdInUnionMode(list.get(i).getYbzd(), operator, "2")
+						.get(0);
+				XtpzSjzdGxh gxhSjzd = new XtpzSjzdGxh();
+				gxhSjzd.setZdbm(String.valueOf(id.nextId()));
+				// 个性化数据域
+				gxhSjzd.setSjybm(sjybm);
+				gxhSjzd.setZdmc(sjzd.getZdmc());
+				gxhSjzd.setYbmc(tableName);
+				gxhSjzd.setYbzd(tableName + ".C" + i);
+				gxhSjzd.setSjlx(sjzd.getSjlx());
+				gxhSjzd.setJhbz("N");
+				gxhSjzd.setCzybm(operator);
+				gxhSjzd.setBz(sjzd.getBz());
+				sjzdGxhDao.insert(gxhSjzd);
+			}
+		}
+		// 写入自定义关系网络
+		// ybzd = ybzd.replaceAll("\"", "\"\"");
+		XtpzSjglysGxh mySjglys = new XtpzSjglysGxh();
+		mySjglys.setLsh(String.valueOf(id.nextId()));
+		mySjglys.setYbmca(tableName);
+		mySjglys.setYbzda(tableName + "." + ybzd);
+		mySjglys.setYbmcb(glbm);
+		mySjglys.setYbzdb(glzd);
+		mySjglys.setCzybm(operator);
+		sjglGxhDao.insert(mySjglys);
+		mySjglys = new XtpzSjglysGxh();
+		mySjglys.setLsh(String.valueOf(id.nextId()));
+		mySjglys.setYbmcb(tableName);
+		mySjglys.setYbzdb(tableName + "." + ybzd);
+		mySjglys.setYbmca(glbm);
+		mySjglys.setYbzda(glzd);
+		mySjglys.setCzybm(operator);
+		sjglGxhDao.insert(mySjglys);
+		return sb.toString();
 	}
 
 }

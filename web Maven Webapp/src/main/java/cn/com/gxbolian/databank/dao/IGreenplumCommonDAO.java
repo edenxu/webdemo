@@ -18,6 +18,8 @@ public interface IGreenplumCommonDAO {
 	 */
 	public String createTableAsSelectSQL(String sql);
 
+	public void createTableAsSelectSQL(String tableName, String sql);
+
 	/**
 	 * 获取指定表的数据行数[分页用]
 	 * 

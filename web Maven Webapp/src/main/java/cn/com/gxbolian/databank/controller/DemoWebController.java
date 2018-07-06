@@ -26,6 +26,7 @@ import cn.com.gxbolian.databank.entity.XtpzXlcs;
 import cn.com.gxbolian.databank.service.IDemoService;
 import cn.com.gxbolian.databank.util.CommonUtil;
 import cn.com.gxbolian.databank.util.CompressUtil;
+import cn.com.gxbolian.databank.util.IdWorker;
 
 @Controller
 // @RequestMapping(value = "/demoWeb")
@@ -78,10 +79,12 @@ public class DemoWebController {
 	public Map<String, Object> dealSelectedSQL(HttpServletRequest request, HttpServletResponse response,
 			@RequestBody ParamsObject object) {
 		Map<String, Object> map = new HashMap<String, Object>();
-		String makeupSQL = demoService.makeUpSelectSQL(object, "admin");
+		IdWorker id = new IdWorker(2);
+		String tableName = "AUTO_" + String.valueOf(id.nextId());
+		String makeupSQL = demoService.makeUpSelectSQL(tableName, object, "admin");
 		log.info("当前结果集对应的SQL语句为:" + makeupSQL);
-
-		String tableName = demoService.createTableAsSelectSQL(makeupSQL);
+		// String tableName = demoService.createTableAsSelectSQL(makeupSQL);
+		demoService.createTableAsSelectSQL(tableName, makeupSQL);
 		// 获取新数据集的元数据信息
 		List<Map<String, Object>> resultMeta = demoService.getTableColumnNameAndDescription(tableName, "admin");
 		// 数据结果集在分析处理
@@ -89,9 +92,10 @@ public class DemoWebController {
 			// 1. 写入数据集基础信息
 			demoService.insertAutoGenerateTableInfo(tableName, object.getMyTableName(), "admin", "N");
 			// 2. 写入数据个性化数据字典
-			demoService.insertPersonalDirectory("admin", tableName, object.getMyTableName(), resultMeta);
+			// 已经放入在构造SQL语句的过程中进行处理
+			// demoService.insertPersonalDirectory("admin", tableName, object.getMyTableName(), resultMeta);
 			// 3. 将数据集放入个性化的关系图中
-			demoService.insertPersonalGridInfo("admin", tableName, resultMeta);
+			//demoService.insertPersonalGridInfo("admin", tableName, resultMeta);
 		} else {
 			// 1. 写入数据集基础信息
 			demoService.insertAutoGenerateTableInfo(tableName, object.getMyTableName(), "admin", "T");
