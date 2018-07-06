@@ -43,6 +43,7 @@ import cn.com.gxbolian.databank.entity.XtpzSjyGxh;
 import cn.com.gxbolian.databank.entity.XtpzSjzd;
 import cn.com.gxbolian.databank.entity.XtpzSjzdExample;
 import cn.com.gxbolian.databank.entity.XtpzSjzdGxh;
+import cn.com.gxbolian.databank.entity.XtpzSjzdGxhExample;
 import cn.com.gxbolian.databank.entity.XtpzTableGxh;
 import cn.com.gxbolian.databank.entity.XtpzXlcs;
 import cn.com.gxbolian.databank.entity.XtpzXlcsExample;
@@ -527,37 +528,51 @@ public class DemoServiceImpl implements IDemoService {
 	}
 
 	@Override
-	public void insertPersonalGridInfo(String opertor, String tableName, List<Map<String, Object>> resultMeta) {
+	public void insertPersonalGridInfo(String operator, String tableName, List<Map<String, Object>> resultMeta) {
 		IdWorker id = new IdWorker(2);
 		Iterator<Map<String, Object>> it = resultMeta.iterator();
+		// 自定义结果集在挂载到联通图上的时候，优先挂载到具有关联关系的自定义表上。xu_xz 2018-07-06
+		// 要挂载的关联数据表名
+		boolean continueFlag = true;
+		String ybzd = "";
 		while (it.hasNext()) {
 			Map<String, Object> map = it.next();
 			for (Entry<String, Object> entry : map.entrySet()) {
 				if ("field".equals(entry.getKey())) {
-					XtpzSjglysGxh mySjglys = new XtpzSjglysGxh();
-					String ybzdb = entry.getValue().toString();
-					mySjglys.setLsh(String.valueOf(id.nextId()));
-					mySjglys.setYbmca(tableName);
-					mySjglys.setYbzda(tableName + ".\"" + ybzdb + "\"");
-					mySjglys.setYbmcb(ybzdb.substring(0, ybzdb.lastIndexOf(".")));
-					mySjglys.setYbzdb(ybzdb);
-					mySjglys.setCzybm(opertor);
-					sjglGxhDao.insert(mySjglys);
-					mySjglys = new XtpzSjglysGxh();
-					mySjglys.setLsh(String.valueOf(id.nextId()));
-					mySjglys.setYbmcb(tableName);
-					mySjglys.setYbzdb(tableName + ".\"" + ybzdb + "\"");
-					mySjglys.setYbmca(ybzdb.substring(0, ybzdb.lastIndexOf(".")));
-					mySjglys.setYbzda(ybzdb);
-					mySjglys.setCzybm(opertor);
-					sjglGxhDao.insert(mySjglys);
+					ybzd = entry.getValue().toString();
+					XtpzSjzdGxhExample sjzdGxhExample = new XtpzSjzdGxhExample();
+					sjzdGxhExample.createCriteria().andYbzdEqualTo(ybzd).andCzybmEqualTo(operator);
+					// 从自定义
+					if (sjzdGxhDao.selectByExample(sjzdGxhExample).size() > 0) {
+						continueFlag = false;
+					}
 				}
-				// 只写一组关联关系即可
+				if (!continueFlag) {
+					break;
+				}
+			}
+			if (!continueFlag) {
 				break;
 			}
-			// 只写一组关联关系即可
-			break;
 		}
+		// 写入自定义关系网络
+		//ybzd = ybzd.replaceAll("\"", "\"\"");
+		XtpzSjglysGxh mySjglys = new XtpzSjglysGxh();
+		mySjglys.setLsh(String.valueOf(id.nextId()));
+		mySjglys.setYbmca(tableName);
+		mySjglys.setYbzda(tableName + ".\"" + ybzd + "\"");
+		mySjglys.setYbmcb(ybzd.substring(0, ybzd.indexOf(".")));
+		mySjglys.setYbzdb(ybzd);
+		mySjglys.setCzybm(operator);
+		sjglGxhDao.insert(mySjglys);
+		mySjglys = new XtpzSjglysGxh();
+		mySjglys.setLsh(String.valueOf(id.nextId()));
+		mySjglys.setYbmcb(tableName);
+		mySjglys.setYbzdb(tableName + ".\"" + ybzd + "\"");
+		mySjglys.setYbmca(ybzd.substring(0, ybzd.indexOf(".")));
+		mySjglys.setYbzda(ybzd);
+		mySjglys.setCzybm(operator);
+		sjglGxhDao.insert(mySjglys);
 	}
 
 	@Override
@@ -598,16 +613,15 @@ public class DemoServiceImpl implements IDemoService {
 		resultMeta.forEach(item -> {
 			for (Entry<String, Object> entry : item.entrySet()) {
 				if ("field".equals(entry.getKey())) {
-					XtpzSjzdExample example = new XtpzSjzdExample();
-					example.createCriteria().andYbzdEqualTo(entry.getValue().toString());
-					XtpzSjzd sjzd = this.sjzdDao.selectByExample(example).get(0);
+					XtpzSjzd sjzd = this.greenplumCommonDAOImpl
+							.getXtpzSjzdInUnionMode(entry.getValue().toString(), operator, "2").get(0);
 					XtpzSjzdGxh gxhSjzd = new XtpzSjzdGxh();
 					gxhSjzd.setZdbm(String.valueOf(id.nextId()));
 					// 个性化数据域
 					gxhSjzd.setSjybm(sjybm);
 					gxhSjzd.setZdmc(sjzd.getZdmc());
 					gxhSjzd.setYbmc(tableName);
-					gxhSjzd.setYbzd(tableName + ".\"" + entry.getValue().toString() + "\"");
+					gxhSjzd.setYbzd(tableName + ".\"" + entry.getValue().toString().replaceAll("\"", "\"\"") + "\"");
 					gxhSjzd.setSjlx(sjzd.getSjlx());
 					gxhSjzd.setJhbz("N");
 					gxhSjzd.setCzybm(operator);

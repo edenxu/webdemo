@@ -250,10 +250,20 @@
 		<div id="page-wrapper">
 			<div class="row">
 				<div class="col-lg-12">
-					<h5>查询字段列表：</h5>
+					<h5>统计字段：</h5>
 					<div class="panel panel-default">
 						<div id="queryfields" class="panel-heading searchColumn">
 							<ul id="sortablefield">
+								<!-- 侧边栏双击选择的字段将被动态添加到这里 -->
+							</ul>
+						</div>
+					</div>
+				</div>
+				<div class="col-lg-12">
+					<h5>筛选字段：</h5>
+					<div class="panel panel-default">
+						<div id="filterfields" class="panel-heading searchColumn">
+							<ul id="filterColumn" class="ui-sortable">
 								<!-- 侧边栏双击选择的字段将被动态添加到这里 -->
 							</ul>
 						</div>
@@ -333,6 +343,7 @@
 	<!-- Custom Theme JavaScript -->
 	<script src="dist/js/sb-admin-2.js"></script>
 	<script src="vendor/bootstrap/js/bootstrap-treeview.min.js"></script>
+	<!-- <script src="js/Sortable.min.js"></script> -->
 	<script src="js/jquery-ui.min.js"></script>
 	<script src="js/layer/layer.js"></script>
 	<script src="js/myTool.js"></script>
@@ -414,12 +425,16 @@
 			// 已经添加过的元素不允许重复加入
 			if (selectArray.indexOf(data.ybzd) == -1) {
 				selectArray.push(data.ybzd);
-				let newNode = $('<li jhbz="' + data.jhbz + '" bz="' + data.bz + '" zdmc="' + data.zdmc + '" zdbm="' + data.zdbm + '" ybzd=\'' + data.ybzd + '\' ybmc="' + data.ybmc + '" sjlx="' + data.sjlx + '" ondblclick="deleteSelectNode(this)" class="btn btn-primary btn-sm" style="margin:2px;">' + data.zdmc + '</li>');
+				let newNode = '<li jhbz="' + data.jhbz + '" bz="' + data.bz + '" zdmc="' + data.zdmc + '" zdbm="' + data.zdbm + '" ybzd=\'' + data.ybzd + '\' ybmc="' + data.ybmc + '" sjlx="' + data.sjlx + '" ondblclick="deleteSelectNode(this)" class="btn btn-primary btn-sm" style="margin:2px;">' + data.zdmc + '</li>';
+				let newNodeFilter = '<li jhbz="' + data.jhbz + '" bz="' + data.bz + '" zdmc="' + data.zdmc + '" zdbm="' + data.zdbm + '" ybzd=\'' + data.ybzd + '\' ybmc="' + data.ybmc + '" sjlx="' + data.sjlx + '"  class="btn btn-primary btn-sm" style="margin:2px;">' + data.zdmc + '</li>';
 				$("#sortablefield").append(newNode);
+				$("#filterColumn").append(newNodeFilter);
 				if (selectArray.length > 0) {
 					$('#queryfields').removeClass('searchColumn');
+					$('#filterfields').removeClass('searchColumn');
 				} else {
 					$('#queryfields').addClass('searchColumn');
+					$('#filterfields').addClass('searchColumn');
 				}
 				return true;
 			} else {
@@ -429,7 +444,6 @@
 				});
 				return false;
 			}
-		//$("#dataTables-example").children("thead").children("tr").append("<th>" + data.text + "</th>");
 		}
 	
 		function clickNode(event, data) {
@@ -455,6 +469,16 @@
 				clickNode(event, data)
 			});
 		}
+		//自定义右键事件
+		function treeRightClickFun() {
+			//节点右键选中时触发
+			$('#treeview1').contextmenu(function(e) {
+				e = e || event;
+				var tag = e.target || e.srcElement;
+				console.log(tag);
+				return false;
+			});
+		}
 	
 		// 删除选中字段
 		function deleteSelectNode(value) {
@@ -463,6 +487,14 @@
 			selectArray.remove(mapValue);
 			// 从DOM中删除对应字段内容
 			value.remove();
+			// 删除筛选字段里的内容
+			let filterColumns = $('#filterColumn').children();
+			for (let i = 0; i < filterColumns.length; i++) {
+				let swap = filterColumns[i];
+				if ($(swap).attr("ybzd") == mapValue) {
+					filterColumns[i].remove();
+				}
+			}
 			if (selectArray.length > 0) {
 				$('#queryfields').removeClass('searchColumn');
 			} else {
@@ -489,6 +521,10 @@
 							nodeIcon : 'glyphicon',
 							color : "#428bca",
 							data : defaultData,
+							onMouseDown : function(event, node) {
+								if (event.which === 3)
+									$("#test_id").html('<span>你按下了右键</span>');
+							}
 						});
 					};
 					$selectableTree = initSelectableTree();
@@ -498,6 +534,8 @@
 					//查询字段动态处理
 					$("#sortablefield").sortable();
 					$("#sortablefield").disableSelection();
+					//右键处理
+					treeRightClickFun();
 				},
 				error : function(xhr, textStatus) {
 					console.log('错误')
