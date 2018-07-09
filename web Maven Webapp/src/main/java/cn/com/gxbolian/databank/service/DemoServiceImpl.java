@@ -676,11 +676,10 @@ public class DemoServiceImpl implements IDemoService {
 				}
 				XtpzSjzdGxhExample sjzdGxhExample = new XtpzSjzdGxhExample();
 				sjzdGxhExample.createCriteria().andYbzdEqualTo(glzd).andCzybmEqualTo(operator);
-				// 从自定义
+				// 如果该字段属于个性化数据字典，则优先挂载到个性化数据字典的字段中
 				if (sjzdGxhDao.selectByExample(sjzdGxhExample).size() > 0) {
 					continueFind = false;
 				}
-				
 
 				// 生成个性化数据字典信息
 				XtpzSjzd sjzd = this.greenplumCommonDAOImpl.getXtpzSjzdInUnionMode(list.get(i).getYbzd(), operator, "2")
