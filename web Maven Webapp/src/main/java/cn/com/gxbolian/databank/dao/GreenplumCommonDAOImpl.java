@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -131,12 +130,8 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 		int columnNum = sqlRsmd.getColumnCount();
 		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
 		for (int i = 1; i <= columnNum; i++) {
-			String columnName = sqlRsmd.getColumnName(i);
-			// List<XtpzSjzd> list = this.getXtpzSjzdInUnionMode(columnName,
-			// operator, "2");
-			log.info("------:" + (tableName + "." + columnName).toUpperCase());
-			List<XtpzSjzd> list = this.getXtpzSjzdInUnionMode((tableName + "." + columnName).toUpperCase(), operator,
-					"2");
+			String columnName = tableName + "." + sqlRsmd.getColumnName(i).toUpperCase();
+			List<XtpzSjzd> list = this.getXtpzSjzdInUnionMode(columnName, operator, "2");
 			Map<String, Object> temp = new HashMap<String, Object>();
 			temp.put("field", columnName);
 			temp.put("title", list.get(0).getZdmc());
@@ -192,8 +187,8 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 		while (sjzdIt.hasNext()) {
 			XtpzSjzd sjzd = sjzdIt.next();
 			// 将下拉参数和源表字段的关联性保存起来，后面处理字段显示值需要用到
-			relaMap.put(sjzd.getBz(), sjzd.getYbzd());
-			columnList.add(sjzd.getBz().replaceAll("\"", "\"\""));
+			relaMap.put(sjzd.getXlzdbm(), sjzd.getYbzd());
+			columnList.add(sjzd.getXlzdbm().replaceAll("\"", "\"\""));
 		}
 		XtpzXlcsExample xlcsExample = new XtpzXlcsExample();
 		xlcsExample.createCriteria().andZdbmIn(columnList);
@@ -226,9 +221,6 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 			transMap.put(relaMap.get(currentZd), temp);
 		}
 
-		for (Entry<String, Map<String, String>> key : transMap.entrySet()) {
-			log.info("key:" + key);
-		}
 		/** 查询结果集数据处理并返回 */
 		while (rowSet.next()) {
 			Map<String, Object> dataMap = new HashMap<String, Object>();
@@ -266,11 +258,8 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 		// 排序方式
 		String orderMode = "".equals(orderByMode) ? "asc" : orderByMode;
 		// 如果没有指定排序字段，则默认用结果集的第一个字段作为升序排序字段依据【解决GP每次合并查询结果后返回的数据次序不一致的问题】
-		if ("1".equals(orderColumn)) {
-			sql += " order by " + orderColumn + " " + orderMode + " limit " + limit + " offset " + offset;
-		} else {
-			sql += " order by \"" + orderColumn + "\" " + orderMode + " limit " + limit + " offset " + offset;
-		}
+		sql += " order by " + orderColumn + " " + orderMode + " limit " + limit + " offset " + offset;
+
 		SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql);
 		SqlRowSetMetaData sqlRsmd = rowSet.getMetaData();
 		int columnNum = sqlRsmd.getColumnCount();
@@ -304,7 +293,7 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 			swap.setYbzd(gxh.getYbzd());
 			swap.setSjlx(gxh.getSjlx());
 			swap.setJhbz(gxh.getJhbz());
-			swap.setBz(gxh.getBz());
+			swap.setXlzdbm(gxh.getXlzdbm());
 			sjzdList.add(swap);
 		}
 
@@ -315,8 +304,8 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 		while (sjzdIt.hasNext()) {
 			XtpzSjzd sjzd = sjzdIt.next();
 			// 将下拉参数和源表字段的关联性保存起来，后面处理字段显示值需要用到
-			relaMap.put(sjzd.getBz(), sjzd.getYbzd());
-			columnList.add(sjzd.getBz());
+			relaMap.put(sjzd.getXlzdbm(), sjzd.getYbzd());
+			columnList.add(sjzd.getXlzdbm());
 		}
 
 		// 找到数据集中所有字段的下拉参数值的信息
@@ -354,12 +343,12 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 		while (rowSet.next()) {
 			Map<String, Object> dataMap = new HashMap<String, Object>();
 			for (int i = 1; i <= columnNum; i++) {
-				String columnName = sqlRsmd.getColumnName(i);
+				String columnName = tableName + "." + sqlRsmd.getColumnName(i).toUpperCase();
 				// 如果该字段存在下拉映射值，则将Value替换为下拉映射的显示值
 				if (transMap.containsKey(columnName)) {
 					Map<String, String> valuesMap = new HashMap<String, String>();
 					valuesMap = transMap.get(columnName);
-					log.info(valuesMap.toString());
+					// log.info(valuesMap.toString());
 					dataMap.put(columnName, valuesMap.get(rowSet.getObject(i)));
 				} else {
 					dataMap.put(columnName, rowSet.getObject(i));
@@ -419,8 +408,8 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 			// 将下拉参数和源表字段的关联性保存起来，后面处理字段显示值需要用到
 			// relaMap.put(sjzd.getZdbm(), sjzd.getYbzd());
 			// columnList.add(sjzd.getZdbm());
-			relaMap.put(sjzd.getBz(), sjzd.getYbzd());
-			columnList.add(sjzd.getBz());
+			relaMap.put(sjzd.getXlzdbm(), sjzd.getYbzd());
+			columnList.add(sjzd.getXlzdbm());
 		}
 		// 找到数据集中所有字段的下拉参数值的信息
 		XtpzXlcsExample xlcsExample = new XtpzXlcsExample();
@@ -530,7 +519,7 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 			swap.setYbzd(gxh.getYbzd());
 			swap.setSjlx(gxh.getSjlx());
 			swap.setJhbz(gxh.getJhbz());
-			swap.setBz(gxh.getBz());
+			swap.setXlzdbm(gxh.getXlzdbm());
 			sjzdList.add(swap);
 		}
 
@@ -543,8 +532,8 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 			// 将下拉参数和源表字段的关联性保存起来，后面处理字段显示值需要用到
 			// relaMap.put(sjzd.getZdbm(), sjzd.getYbzd());
 			// columnList.add(sjzd.getZdbm());
-			relaMap.put(sjzd.getBz(), sjzd.getYbzd());
-			columnList.add(sjzd.getBz());
+			relaMap.put(sjzd.getXlzdbm(), sjzd.getYbzd());
+			columnList.add(sjzd.getXlzdbm());
 		}
 		// 找到数据集中所有字段的下拉参数值的信息
 		XtpzXlcsExample xlcsExample = new XtpzXlcsExample();
@@ -582,7 +571,7 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 			List<Map<String, Object>> tempList = new ArrayList<Map<String, Object>>();
 			for (int i = 1; i <= columnNum; i++) {
 				Map<String, Object> dataMap = new HashMap<String, Object>();
-				String columnName = sqlRsmd.getColumnName(i);
+				String columnName = tableName + "." + sqlRsmd.getColumnName(i).toUpperCase();
 				// 如果该字段存在下拉映射值，则将Value替换为下拉映射的显示值
 				if (transMap.containsKey(columnName)) {
 					Map<String, String> valuesMap = new HashMap<String, String>();
@@ -607,11 +596,11 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 		param[0] = operator;
 		param[1] = queryValue;
 		if ("1".equals(mode)) {
-			sql = "with temp as(select sjybm,sjymc,flbm from yxscdb.XTPZ_sjy union select sjybm,sjymc,flbm from yxscdb.XTPZ_sjy_gxh where czybm=?) select * from temp where sjybm=? order by 1;";
+			sql = "with temp as(select sjybm,sjymc,flbm from yxscdb.XTPZ_sjy union select sjybm,sjymc,flbm from yxscdb.XTPZ_sjy_gxh where czybm=? and sjymc!='') select * from temp where sjybm=? order by 1;";
 		} else if ("2".equals(mode)) {
-			sql = "with temp as(select sjybm,sjymc,flbm from yxscdb.XTPZ_sjy union select sjybm,sjymc,flbm from yxscdb.XTPZ_sjy_gxh where czybm=?) select * from temp where flbm=? order by 1;";
+			sql = "with temp as(select sjybm,sjymc,flbm from yxscdb.XTPZ_sjy union select sjybm,sjymc,flbm from yxscdb.XTPZ_sjy_gxh where czybm=? and sjymc!='') select * from temp where flbm=? order by 1;";
 		}
-		log.info("sql:" + sql);
+		// log.info("sql:" + sql);
 		@SuppressWarnings("rawtypes")
 		List<XtpzSjy> list = jdbcTemplate.query(sql, param, new BeanPropertyRowMapper(XtpzSjy.class));
 		return list;
@@ -625,15 +614,17 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 		param[0] = operator;
 		param[1] = queryValue;
 		if ("1".equals(mode)) {
-			sql = "with temp as(select zdbm,sjybm,zdmc,ybmc,ybzd,sjlx,jhbz,bz from yxscdb.XTPZ_sjzd " + "union "
-					+ "select zdbm,sjybm,zdmc,ybmc,ybzd,sjlx,jhbz,bz from yxscdb.XTPZ_sjzd_gxh where czybm=?) "
+			sql = "with temp as(select zdbm,sjybm,zdmc,ybmc,ybzd,sjlx,jhbz,xlzdbm,zjbz from yxscdb.XTPZ_sjzd "
+					+ "union "
+					+ "select zdbm,sjybm,zdmc,ybmc,ybzd,sjlx,jhbz,xlzdbm,zjbz from yxscdb.XTPZ_sjzd_gxh where czybm=?) "
 					+ "select * from temp where sjybm=? order by 1;";
 		} else if ("2".equals(mode)) {
-			sql = "with temp as(select zdbm,sjybm,zdmc,ybmc,ybzd,sjlx,jhbz,bz from yxscdb.XTPZ_sjzd " + "union "
-					+ "select zdbm,sjybm,zdmc,ybmc,ybzd,sjlx,jhbz,bz from yxscdb.XTPZ_sjzd_gxh where czybm=?) "
+			sql = "with temp as(select zdbm,sjybm,zdmc,ybmc,ybzd,sjlx,jhbz,xlzdbm,zjbz from yxscdb.XTPZ_sjzd "
+					+ "union "
+					+ "select zdbm,sjybm,zdmc,ybmc,ybzd,sjlx,jhbz,xlzdbm,zjbz from yxscdb.XTPZ_sjzd_gxh where czybm=?) "
 					+ "select * from temp where ybzd=? order by 1;";
 		}
-		log.info("sql:" + sql);
+		// log.info("sql:" + sql);
 		@SuppressWarnings("rawtypes")
 		List<XtpzSjzd> list = jdbcTemplate.query(sql, param, new BeanPropertyRowMapper(XtpzSjzd.class));
 		return list;
@@ -648,7 +639,7 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 		sql = "with temp as(select lsh,ybmca,ybzda,ybmcb,ybzdb from yxscdb.XTPZ_sjglys " + " union "
 				+ "select lsh,ybmca,ybzda,ybmcb,ybzdb from yxscdb.XTPZ_sjglys_gxh where czybm=?) "
 				+ " select * from temp order by ybmca ";
-		log.info("sql:" + sql);
+		// log.info("sql:" + sql);
 		@SuppressWarnings("rawtypes")
 		List<XtpzSjglys> list = jdbcTemplate.query(sql, param, new BeanPropertyRowMapper(XtpzSjglys.class));
 		return list;

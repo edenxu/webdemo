@@ -37,6 +37,8 @@ public interface IDemoService {
 	 */
 	public String getNodeInfoForTree(String nodeId);
 
+	public String getNodeInfoForTree(String nodeId, String operator);
+
 	/**
 	 * 根据节点编号获取该节点下的树形信息
 	 * 
@@ -86,7 +88,7 @@ public interface IDemoService {
 	 */
 	public String createTableAsSelectSQL(String sql);
 
-	public void createTableAsSelectSQL(String tableName,String sql);
+	public void createTableAsSelectSQL(String tableName, String sql);
 
 	/**
 	 * 获取特定表的相关数据信息

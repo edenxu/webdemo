@@ -18,6 +18,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.gson.Gson;
 
@@ -40,6 +42,7 @@ import cn.com.gxbolian.databank.entity.XtpzSjglysGxhExample;
 import cn.com.gxbolian.databank.entity.XtpzSjy;
 import cn.com.gxbolian.databank.entity.XtpzSjyExample;
 import cn.com.gxbolian.databank.entity.XtpzSjyGxh;
+import cn.com.gxbolian.databank.entity.XtpzSjyGxhExample;
 import cn.com.gxbolian.databank.entity.XtpzSjzd;
 import cn.com.gxbolian.databank.entity.XtpzSjzdExample;
 import cn.com.gxbolian.databank.entity.XtpzSjzdGxh;
@@ -132,12 +135,71 @@ public class DemoServiceImpl implements IDemoService {
 	}
 
 	@Override
+	public String getNodeInfoForTree(String nodeId, String operator) {
+		XtpzSjy sjy = new XtpzSjy();
+		Gson gson = new Gson();
+		sjy.setFlbm(nodeId);
+		List<XtpzSjy> sjyList = this.getXtpzSjyListByExample(sjy);
+		/** 补充个性化拓展的数据域内容 **/
+		XtpzSjyGxhExample sjyGxhExample = new XtpzSjyGxhExample();
+		sjyGxhExample.createCriteria().andFlbmEqualTo(nodeId).andCzybmEqualTo(operator).andSjymcNotEqualTo("");
+		sjyGxhExample.setOrderByClause(" sjybm asc");
+		List<XtpzSjyGxh> gxhSjyList = this.sjyGxhDao.selectByExample(sjyGxhExample);
+		for (XtpzSjyGxh gxh : gxhSjyList) {
+			XtpzSjy tempSjy = new XtpzSjy();
+			tempSjy.setSjybm(gxh.getSjybm());
+			tempSjy.setSjymc(gxh.getSjymc());
+			tempSjy.setFlbm(gxh.getFlbm());
+			tempSjy.setBz(gxh.getBz());
+			sjyList.add(tempSjy);
+		}
+		List<XtpzSjzd> sjzdList = new ArrayList<XtpzSjzd>();
+		if (sjyList.size() > 0) {
+			Iterator<XtpzSjy> it = sjyList.iterator();
+			while (it.hasNext()) {
+				XtpzSjzd sjzd = new XtpzSjzd();
+				sjy = it.next();
+				sjzd = new XtpzSjzd();
+				sjzd.setZdbm(sjy.getSjybm());
+				sjzd.setZdmc(sjy.getSjymc());
+				sjzd.setPnode(true);
+				sjzd.setSjybm(sjy.getFlbm());
+				sjzdList.add(sjzd);
+			}
+
+		} else {
+			XtpzSjzd sjzd = new XtpzSjzd();
+			sjzd = new XtpzSjzd();
+			sjzd.setSjybm(nodeId);
+			sjzdList = this.getXtpzSjzdListByExample(sjzd);
+			/** 补充个性化拓展的数据字典内容 **/
+			XtpzSjzdGxhExample sjzdGxhExample = new XtpzSjzdGxhExample();
+			sjzdGxhExample.createCriteria().andSjybmEqualTo(nodeId).andCzybmEqualTo(operator);
+			sjzdGxhExample.setOrderByClause(" zdbm asc");
+			List<XtpzSjzdGxh> sjzdGxhList = sjzdGxhDao.selectByExample(sjzdGxhExample);
+			for (XtpzSjzdGxh gxh : sjzdGxhList) {
+				XtpzSjzd swap = new XtpzSjzd();
+				swap.setZdbm(gxh.getZdbm());
+				swap.setSjybm(gxh.getSjybm());
+				swap.setZdmc(gxh.getZdmc());
+				swap.setYbmc(gxh.getYbmc());
+				swap.setYbzd(gxh.getYbzd());
+				swap.setSjlx(gxh.getSjlx());
+				swap.setJhbz(gxh.getJhbz());
+				swap.setXlzdbm(gxh.getXlzdbm());
+				sjzdList.add(swap);
+			}
+		}
+		return gson.toJson(sjzdList);
+	}
+
+	@Override
 	public String makeUpSelectSQL(ParamsObject object) {
 		String selectColumns = "";
 		StringBuffer sb = new StringBuffer();
 		// 获取读取字段所涉及的相关数据表【经过去重处理】
 		String[] tableArray = CommonUtil.TableListDuplicateRemoval(object.getSelectTables());
-		log.info("tableArray:" + new Gson().toJson(tableArray));
+		// log.info("tableArray:" + new Gson().toJson(tableArray));
 		// 获取需要查询的字段内容
 		selectColumns = CommonUtil.pickUpSelectedColumns(object.getSelectTables());
 		selectColumns = selectColumns.substring(0, selectColumns.length() - 1);
@@ -166,6 +228,7 @@ public class DemoServiceImpl implements IDemoService {
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class, propagation = Propagation.NESTED)
 	public String makeUpSelectSQL(String tableName, ParamsObject object, String operator) {
 		String selectColumns = "";
 		StringBuffer sb = new StringBuffer();
@@ -177,10 +240,15 @@ public class DemoServiceImpl implements IDemoService {
 		// CommonUtil.pickUpSelectedColumns(object.getSelectTables());
 
 		String tableNickName = object.getMyTableName();
+		String fromTablesAndRelation = makeUpFromTablesAndColumnRelation(tableArray, operator);
+		// 如果fromTablesAndRelation字段为空串，则表示相关节点无法联通，直接返回空串到前台
+		if ("".equals(fromTablesAndRelation)) {
+			return "";
+		}
+
+		// 开始进行相关构造SQL语句的业务处理，包括生成个性化数据域、个性化数据字典、个性化连通图关系等
 		selectColumns = this.pickUpSelectedColumns(tableName, tableNickName, object.getSelectTables(), operator);
 		selectColumns = selectColumns.substring(0, selectColumns.length() - 1);
-		String fromTablesAndRelation = makeUpFromTablesAndColumnRelation(tableArray, operator);
-
 		if (tableArray.length <= 1) {
 			sb.append(selectColumns).append(fromTablesAndRelation);
 			if (!"".equals(object.getWhereClause())) {
@@ -235,7 +303,8 @@ public class DemoServiceImpl implements IDemoService {
 				mc.setYbmc(sjzd.getYbmc());
 				mc.setYbzd(sjzd.getYbzd());
 				mc.setSjybm(sjzd.getSjybm());
-				mc.setBz(sjzd.getBz());
+				mc.setXlzdbm(sjzd.getXlzdbm());
+				mc.setZjbz(sjzd.getZjbz());
 				m.getNodes().add(mc);
 			}
 			entity.getNodes().add(m);
@@ -268,7 +337,8 @@ public class DemoServiceImpl implements IDemoService {
 				mc.setYbmc(sjzd.getYbmc());
 				mc.setYbzd(sjzd.getYbzd());
 				mc.setSjybm(sjzd.getSjybm());
-				mc.setBz(sjzd.getBz());
+				mc.setXlzdbm(sjzd.getXlzdbm());
+				mc.setZjbz(sjzd.getZjbz());
 				m.getNodes().add(mc);
 			}
 			entity.getNodes().add(m);
@@ -383,6 +453,10 @@ public class DemoServiceImpl implements IDemoService {
 		String[] roadArray = new String[road.size()];
 		boolean firstFlag = true;
 		road.toArray(roadArray);
+		// 如果联通数组为空，则证明相关节点无法正常联通，直接返回
+		if (roadArray.length == 0) {
+			return "";
+		}
 
 		// 将关系图中的线路节点进行去重处理后，作为SQL语句中FROM子句的数据表来源
 		String tablesNameList = Arrays.toString(CommonUtil.StringArrayDuplicateRemoval(roadArray));
@@ -627,7 +701,7 @@ public class DemoServiceImpl implements IDemoService {
 					gxhSjzd.setSjlx(sjzd.getSjlx());
 					gxhSjzd.setJhbz("N");
 					gxhSjzd.setCzybm(operator);
-					gxhSjzd.setBz(sjzd.getBz());
+					gxhSjzd.setXlzdbm(sjzd.getXlzdbm());
 					sjzdGxhDao.insert(gxhSjzd);
 				}
 			}
@@ -660,7 +734,7 @@ public class DemoServiceImpl implements IDemoService {
 		// 生成个性化数据域信息
 		String sjybm = insertPersonalDomain(operator, tableNickName);
 		IdWorker id = new IdWorker(2);
-		String ybzd = "", glbm = "", glzd = "";
+		String ybzd = "", glbm = "", glzd = "", zjbz = "N";
 		boolean continueFind = true;
 		sb.append("SELECT DISTINCT ");
 		for (int i = 0; i < j; i++) {
@@ -669,16 +743,20 @@ public class DemoServiceImpl implements IDemoService {
 				// sb.append(list.get(i).getYbzd()).append(" AS
 				// \"").append(list.get(i).getYbzd()).append("\",");
 				sb.append(list.get(i).getYbzd()).append(" AS ").append("C" + i).append(",");
-				if (continueFind) {
-					ybzd = "C" + i;
+
+				// 主键标志
+				zjbz = list.get(i).getZjbz();
+				// 如果该字段是主键字段，并且是来源于自定义数据表内容，则直接挂载到该数据表上，不用再继续考虑是否挂载其他表上
+				if ("Y".equals(zjbz) && continueFind) {
 					glbm = list.get(i).getYbmc();
 					glzd = list.get(i).getYbzd();
-				}
-				XtpzSjzdGxhExample sjzdGxhExample = new XtpzSjzdGxhExample();
-				sjzdGxhExample.createCriteria().andYbzdEqualTo(glzd).andCzybmEqualTo(operator);
-				// 如果该字段属于个性化数据字典，则优先挂载到个性化数据字典的字段中
-				if (sjzdGxhDao.selectByExample(sjzdGxhExample).size() > 0) {
-					continueFind = false;
+					ybzd = "C" + i;
+					XtpzSjzdGxhExample sjzdGxhExample = new XtpzSjzdGxhExample();
+					sjzdGxhExample.createCriteria().andYbzdEqualTo(glzd).andCzybmEqualTo(operator);
+					// 如果该字段属于个性化数据字典，则优先挂载到个性化数据字典的字段中
+					if (sjzdGxhDao.selectByExample(sjzdGxhExample).size() > 0) {
+						continueFind = false;
+					}
 				}
 
 				// 生成个性化数据字典信息
@@ -694,28 +772,31 @@ public class DemoServiceImpl implements IDemoService {
 				gxhSjzd.setSjlx(sjzd.getSjlx());
 				gxhSjzd.setJhbz("N");
 				gxhSjzd.setCzybm(operator);
-				gxhSjzd.setBz(sjzd.getBz());
+				gxhSjzd.setXlzdbm(sjzd.getXlzdbm());
+				gxhSjzd.setZjbz(sjzd.getZjbz());
 				sjzdGxhDao.insert(gxhSjzd);
 			}
 		}
 		// 写入自定义关系网络
-		// ybzd = ybzd.replaceAll("\"", "\"\"");
-		XtpzSjglysGxh mySjglys = new XtpzSjglysGxh();
-		mySjglys.setLsh(String.valueOf(id.nextId()));
-		mySjglys.setYbmca(tableName);
-		mySjglys.setYbzda(tableName + "." + ybzd);
-		mySjglys.setYbmcb(glbm);
-		mySjglys.setYbzdb(glzd);
-		mySjglys.setCzybm(operator);
-		sjglGxhDao.insert(mySjglys);
-		mySjglys = new XtpzSjglysGxh();
-		mySjglys.setLsh(String.valueOf(id.nextId()));
-		mySjglys.setYbmcb(tableName);
-		mySjglys.setYbzdb(tableName + "." + ybzd);
-		mySjglys.setYbmca(glbm);
-		mySjglys.setYbzda(glzd);
-		mySjglys.setCzybm(operator);
-		sjglGxhDao.insert(mySjglys);
+		// 如果当前的结果集不包含主键，则不将结果挂载到连通图中，因为没有主键的数据无法准确支撑二次分析，失去了挂载到连通图的意义
+		if (!"".equals(glbm) && !"".equals(glzd)) {
+			XtpzSjglysGxh mySjglys = new XtpzSjglysGxh();
+			mySjglys.setLsh(String.valueOf(id.nextId()));
+			mySjglys.setYbmca(tableName);
+			mySjglys.setYbzda(tableName + "." + ybzd);
+			mySjglys.setYbmcb(glbm);
+			mySjglys.setYbzdb(glzd);
+			mySjglys.setCzybm(operator);
+			sjglGxhDao.insert(mySjglys);
+			mySjglys = new XtpzSjglysGxh();
+			mySjglys.setLsh(String.valueOf(id.nextId()));
+			mySjglys.setYbmcb(tableName);
+			mySjglys.setYbzdb(tableName + "." + ybzd);
+			mySjglys.setYbmca(glbm);
+			mySjglys.setYbzda(glzd);
+			mySjglys.setCzybm(operator);
+			sjglGxhDao.insert(mySjglys);
+		}
 		return sb.toString();
 	}
 

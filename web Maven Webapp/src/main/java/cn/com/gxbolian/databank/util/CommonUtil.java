@@ -23,7 +23,6 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Value;
 
 import cn.com.gxbolian.databank.algorithm.Distance;
 import cn.com.gxbolian.databank.algorithm.DistanceDijkstraImpl;
@@ -32,8 +31,6 @@ import cn.com.gxbolian.databank.entity.XtpzSjzd;
 public class CommonUtil {
 
 	public static Logger log = LogManager.getLogger(CommonUtil.class);
-	@Value("${export.dir}")
-	public static String EXPORT_DIR = "d:\\360Downloads\\";
 
 	/**
 	 * 根据字段清单计算并返回一个去重后的涉及数据表数组
@@ -54,7 +51,7 @@ public class CommonUtil {
 		}
 		String[] container = new String[swapList.size()];
 		swapList.toArray(container);
-		log.info("container:" + container.length);
+		// log.info("container:" + container.length);
 		return StringArrayDuplicateRemoval(container);
 	}
 
@@ -226,10 +223,11 @@ public class CommonUtil {
 		FileOutputStream outputStream = null;
 		String fileName = UUID.randomUUID().toString().replace("-", "").toLowerCase() + ".xlsx";
 		try {
-			log.debug("EXPORT_DIR:" + CommonUtil.EXPORT_DIR);
 			// 创建文件
-			createDirectoryAndFile(CommonUtil.EXPORT_DIR, fileName);
-			File f = new File(CommonUtil.EXPORT_DIR + fileName);
+			PropertiesUtil propUtil = new PropertiesUtil("config.properties");
+			String exportDir = propUtil.get("export.dir");
+			createDirectoryAndFile(exportDir, fileName);
+			File f = new File(exportDir + fileName);
 			f.setWritable(true, false);
 			f.setReadable(true, false);
 			outputStream = new FileOutputStream(f);

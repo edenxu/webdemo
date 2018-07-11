@@ -27,6 +27,7 @@ import cn.com.gxbolian.databank.service.IDemoService;
 import cn.com.gxbolian.databank.util.CommonUtil;
 import cn.com.gxbolian.databank.util.CompressUtil;
 import cn.com.gxbolian.databank.util.IdWorker;
+import cn.com.gxbolian.databank.util.PropertiesUtil;
 
 @Controller
 // @RequestMapping(value = "/demoWeb")
@@ -70,7 +71,7 @@ public class DemoWebController {
 	@ResponseBody
 	public String getSjyByExampleZTree(HttpServletRequest request, HttpServletResponse response) {
 		String flbm = request.getParameter("zdbm") == null ? "0" : request.getParameter("zdbm");
-		return demoService.getNodeInfoForTree(flbm);
+		return demoService.getNodeInfoForTree(flbm, "admin");
 	}
 
 	@RequestMapping(value = "dealSelectedSQL", produces = "application/json;charset=utf-8", method = {
@@ -81,7 +82,12 @@ public class DemoWebController {
 		Map<String, Object> map = new HashMap<String, Object>();
 		IdWorker id = new IdWorker(2);
 		String tableName = "AUTO_" + String.valueOf(id.nextId());
-		String makeupSQL = demoService.makeUpSelectSQL(tableName, object, "admin");
+		String makeupSQL = "";
+		makeupSQL = demoService.makeUpSelectSQL(tableName, object, "admin");
+		if ("".equals(makeupSQL)) {
+			map.put("sql", makeupSQL);
+			return map;
+		}
 		log.info("当前结果集对应的SQL语句为:" + makeupSQL);
 		// String tableName = demoService.createTableAsSelectSQL(makeupSQL);
 		demoService.createTableAsSelectSQL(tableName, makeupSQL);
@@ -93,9 +99,11 @@ public class DemoWebController {
 			demoService.insertAutoGenerateTableInfo(tableName, object.getMyTableName(), "admin", "N");
 			// 2. 写入数据个性化数据字典
 			// 已经放入在构造SQL语句的过程中进行处理
-			// demoService.insertPersonalDirectory("admin", tableName, object.getMyTableName(), resultMeta);
+			// demoService.insertPersonalDirectory("admin", tableName,
+			// object.getMyTableName(), resultMeta);
 			// 3. 将数据集放入个性化的关系图中
-			//demoService.insertPersonalGridInfo("admin", tableName, resultMeta);
+			// demoService.insertPersonalGridInfo("admin", tableName,
+			// resultMeta);
 		} else {
 			// 1. 写入数据集基础信息
 			demoService.insertAutoGenerateTableInfo(tableName, object.getMyTableName(), "admin", "T");
@@ -125,9 +133,9 @@ public class DemoWebController {
 			RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
 	public Map<String, Object> getColumnDropDownList(HttpServletRequest request, HttpServletResponse response) {
-		String bz = request.getParameter("bz") == null ? "" : request.getParameter("bz");
+		String xlzdbm = request.getParameter("xlzdbm") == null ? "" : request.getParameter("xlzdbm");
 		XtpzXlcs xlcs = new XtpzXlcs();
-		xlcs.setZdbm(bz);
+		xlcs.setZdbm(xlzdbm);
 		List<XtpzXlcs> list = demoService.getXtpzXlcsListByExample(xlcs);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("result", list);
@@ -161,9 +169,11 @@ public class DemoWebController {
 			String preFileName = UUID.randomUUID().toString().replace("-", "").toLowerCase();
 			fileName = preFileName + "-template.xlsx";
 			// 创建文件
-			CommonUtil.createDirectoryAndFile(CommonUtil.EXPORT_DIR + preFileName + "\\", fileName);
-			CommonUtil.exportDataToExcelHead(CommonUtil.EXPORT_DIR + preFileName + "\\" + fileName, head);
-			String templateFileName = CommonUtil.EXPORT_DIR + preFileName + "\\" + fileName;
+			PropertiesUtil propUtil = new PropertiesUtil("config.properties");
+			String exportDir = propUtil.get("export.dir");
+			CommonUtil.createDirectoryAndFile(exportDir + preFileName + "\\", fileName);
+			CommonUtil.exportDataToExcelHead(exportDir + preFileName + "\\" + fileName, head);
+			String templateFileName = exportDir + preFileName + "\\" + fileName;
 			int fileIndex = 1;
 			List<List<Map<String, Object>>> body = null;
 			for (long i = 0; i <= totalRows; i += fileRecordSize) {
@@ -174,8 +184,7 @@ public class DemoWebController {
 			}
 			// 将结果集打包
 			try {
-				CompressUtil.compress(CommonUtil.EXPORT_DIR + preFileName,
-						CommonUtil.EXPORT_DIR + preFileName + ".zip");
+				CompressUtil.compress(exportDir + preFileName, exportDir + preFileName + ".zip");
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
