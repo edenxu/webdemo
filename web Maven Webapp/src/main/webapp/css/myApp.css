@@ -2,14 +2,8 @@
 	
 }
 
-row {
-	height: auto !important;
-	height: 50px;
-	min-height: 50px;
-}
-
 .page-head {
-	width: 100%;
+	/* width: 100%; */
 	font-size: 28px;
 	border-bottom: solid 1px #e1e1e1;
 	margin-left: 50px;
@@ -17,7 +11,7 @@ row {
 
 .frame {
 	display: flex;
-	width: 100%;
+	/* width: 100%; */
 }
 
 .ztree {
@@ -33,8 +27,8 @@ row {
 }
 
 .searchColumn-border {
-	border: solid 1px #e4e4e4;
-	margin: 2px;
+	/* border: solid 1px #e4e4e4;
+	margin: 2px; */
 }
 
 .searchColumn {
@@ -53,10 +47,6 @@ row {
 	display: flex;
 }
 
-.panel-heading-tile {
-	width: 85%;
-}
-
 .my-btn {
 	border: 1px solid black;
 	background-color: #dddddd;
@@ -69,4 +59,8 @@ row {
 
 .treeview {
 	font-size: 12px;
+	/* height: auto !important; */
+	height: 700px;
+	min-height: 700px;
+	overflow:auto;
 }

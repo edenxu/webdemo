@@ -1,41 +1,663 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>关系图测试</title>
 
-<meta name="keywords" content="keyword1,keyword2,keyword3">
-<meta name="description" content="this is my page">
-<meta name="content-type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
 
-<!--<link rel="stylesheet" type="text/css" href="./styles.css">-->
+<title>营销业务分析及数据转换平台</title>
+<!-- Bootstrap Core CSS -->
+<link rel="stylesheet" href="css/jquery-ui.min.css">
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/bootstrap-table.min.css">
+<link rel="stylesheet" href="css/myApp.css" />
+<link rel="stylesheet" href="css/zTreeStyle/metro.css" type="text/css">
 </head>
 
 <body>
+	<div class="page">
+		<div class="page-head">核心功能DEMO</div>
+		<div class="frame">
+			<div id="treeview1" class="ztree treeview"></div>
+			<div id="page-wrapper" class="page-wrapper">
+				<div id="tabs1">
+					<ul>
+						<li><a href="#tabs1-1">查询字段列表</a></li>
+					</ul>
+					<div id="tabs1-1">
+						<div class="searchColumn-border">
+							<div id="queryfields" class="panel-heading searchColumn">
+								<ul id="sortablefield">
+									<!-- 侧边栏双击选择的字段将被动态添加到这里 -->
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div id="tabs2">
+					<ul>
+						<li><a href="#tabs2-1">筛选字段列表</a></li>
+					</ul>
+					<div id="tabs2-1">
+						<div class="searchColumn-border">
+							<div id="filterfields" class="panel-heading searchColumn">
+								<ul id="filterColumn">
+									<!-- 侧边栏双击选择的字段将被动态添加到这里 -->
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div id="tabs3">
+					<ul>
+						<li><a href="#tabs3-1">基础筛选设置</a></li>
+					</ul>
+					<div id="tabs3-1">
+						<button type="button" class="btn  btn-default btn-sm"
+							onclick="addWhereClause()">
+							<span class="glyphicon glyphicon-plus"> 添 加 </span>
+						</button>
+						<button type="button" class="btn  btn-default btn-sm"
+							id="searchButton">
+							<span class="glyphicon glyphicon-search" onClick="goSearch()">
+								查 询 </span>
+						</button>
+						<input type="checkbox" name="saveToGxh" id="saveToGxh">结果再分析</input>
+						<input type="text" id="myTableName" placeholder="给当前结果集起个别名" /> <br>
+						<div class="whereArea" id="whereArea"></div>
+					</div>
+				</div>
+				<div id="tabs4">
+					<ul>
+						<li><a href="#tabs4-1">统计结果展示</a></li>
+					</ul>
+					<div id="tabs4-1">
+						<div class="searchColumn-border">
+							<div class="result-heading">
+								<button type="button" class="btn btn-sm btn-export"
+									aria-label="Left Align" onClick="exportData()">
+									<span class="glyphicon glyphicon-export glyphicon-align-left"
+										aria-hidden="true"></span> 结果导出
+								</button>
+							</div>
+							<!-- /.panel-heading -->
+							<div class="panel-body" style="overflow:auto">
+								<table width="100%"
+									class="table table-striped table-bordered table-hover"
+									id="dataTable">
+								</table>
+								<!-- /.table -->
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- /#wrapper -->
+
+	<!-- jQuery -->
 	<script src="js/jquery-3.3.1.min.js"></script>
-	<script type="text/javascript" src="js/dracula/dracula.min.js"></script>
+	<script src="js/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="js/zTree/jquery.ztree.all.min.js"></script>
+	<!-- Bootstrap Core JavaScript -->
+	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+	<script src="js/bootstrap-table.js"></script>
+	<script src="js/bootstrap-table-zh-CN.min.js">
+	<script src="js/layer/layer.js"></script>
+	<script src="js/myTool.js"></script>
+	<script src="js/layer/layer.js"></script>
+
+
 	<script type="text/javascript">
-		window.onload = function() {
-			var width = 400; //定义宽度，也可以为 var width=$('#div').width()
-			var height = 500; //定义高度
-			var g = new Graph();
-			g.edgeFactory.template.style.directed = true; //设置链接之间是否有箭头
-			//以下为定义任务关系
-			g.addEdge("张三", "李四");
-			g.addEdge("张三", "王五");
-			g.addEdge("张三", "二麻子");
+		var t = $("#treeview1");
+		var setting = {
+			async : {
+				enable : true,
+				url : "getSjyByExampleZTree",
+				autoParam : [ "zdbm", "sjybm" ],
+				dataType : "json",
+				otherParam : {
+				},
+				dataFilter : filter
+			},
+			data : {
+				key : {
+					name : 'zdmc',
+					isParent : "pnode"
+				},
+				simpleData : {
+					enable : true,
+					idKey : 'zdbm',
+					pIdKey : 'sjybm',
+				},
+			},
+			callback : { //回调函数  
+				onDblClick : zTreeDbClick,
+				onRightClick : zTreeRightClick,
+			}
+		};
 	
-			g.addEdge("李四", "李颖");
-			g.addEdge("李四", "李英");
+		function filter(treeId, parentNode, childNodes) {
+			if (!childNodes) return null;
+			return childNodes;
+		}
 	
-			g.addEdge("王五", "李海男");
-			g.addEdge("王五", "张笑");
+		function zTreeDbClick(treeId, parentNode, childNodes) {
+			if (typeof (childNodes.ybzd) == 'undefined' || childNodes.ybzd == null) {
+				return false;
+			} else {
+				let data = childNodes;
+				// 已经添加过的元素不允许重复加入
+				if (selectArray.indexOf(data.ybzd) == -1) {
+					selectArray.push(data.ybzd);
+					let zdmc = "";
+					if(data.zjbz=='Y'){
+						zdmc = data.zdmc+'[🔑]';
+					}else{
+						zdmc = data.zdmc;
+					}
+					let newNode = '<li jhbz="' + data.jhbz + '" zjbz="' + data.zjbz + '" xlzdbm="' + data.xlzdbm + '" zdmc="' + data.zdmc + '" zdbm="' + data.zdbm + '" ybzd=\'' + data.ybzd + '\' ybmc="' + data.ybmc + '" sjlx="' + data.sjlx + '" ondblclick="deleteSelectNode(this)" class="btn  my-btn btn-sm" style="margin:2px;">' + zdmc + '</li>';
+					$("#sortablefield").append(newNode);
+					if (selectArray.length > 0) {
+						$('#queryfields').removeClass('searchColumn');
+					} else {
+						$('#queryfields').addClass('searchColumn');
+					}
+					return true;
+				} else {
+					layer.alert('该字段已添加到统计区.', {
+						icon : 6,
+						title : '温馨提示'
+					});
+					return false;
+				}
+			}
+		}
 	
-			var layouter = new Graph.Layout.Spring(g);
-			layouter.layout();
+		function zTreeRightClick(treeId, parentNode, childNodes) {
+			if (typeof (childNodes.ybzd) == 'undefined') {
+				return false;
+			} else {
+				let data = childNodes;
+				// 首先检查该字段是否与已添加的字段存在关联性，即：筛选字段与已选择的某统计字段来源于同一张表
+				let list = $('#sortablefield').children();
+				let stopFlag = true;
+				list.each(function(id, value) {
+					if (data.ybmc == $(value).attr("ybmc")) {
+						stopFlag = false;
+						return false;
+					}
+				});
+				if (stopFlag) {
+					layer.alert('该筛选字段:【' + data.zdmc + '】与统计字段列表无强关联关系，无法为您提供准确筛选。');
+					return;
+				}
+				// 已经添加过的元素不允许重复加入
+				if (filterArray.indexOf(data.ybzd) == -1) {
+					filterArray.push(data.ybzd);
+					let newNodeFilter = '<li jhbz="' + data.jhbz + '" zjbz="' + data.zjbz + '" xlzdbm="' + data.xlzdbm + '" zdmc="' + data.zdmc + '" zdbm="' + data.zdbm + '" ybzd=\'' + data.ybzd + '\' ybmc="' + data.ybmc + '" sjlx="' + data.sjlx + '" ondblclick="deleteFilterNode(this)"  class="btn my-btn btn-sm" style="margin:2px;">' + data.zdmc + '</li>';
+					$("#filterColumn").append(newNodeFilter);
+					if (filterArray.length > 0) {
+						$('#filterfields').removeClass('searchColumn');
+					} else {
+						$('#filterfields').addClass('searchColumn');
+					}
+					return true;
+				} else {
+					layer.alert('该字段已添加到过滤区.', {
+						icon : 6,
+						title : '温馨提示'
+					});
+					return false;
+				}
+			}
+		}
 	
-			var renderer = new Graph.Renderer.Raphael('canvas', g, width, height);
-			renderer.draw();
+		var defaultData = [];
+		var $selectableTree;
+		// 选择字段
+		var selectArray = new Array();
+		// 过滤字段
+		var filterArray = new Array();
+		var optionString = '<select class="form-control"><option value=" > "> > </option><option value=" >= "> >= </option><option value=" = "> = </option>'
+			+ '<option value=" < "> < </option><option value=" <= "> <= </option><option value=" IN "> IN </option><option value=" NOT IN "> NOT IN </option><option value=" LIKE "> LIKE </option></select>';
+		var optionBefore = '<select class="form-control"><option value="">  </option><option value=" ( "> ( </option></select>';
+		var optionAfter = '<select class="form-control"><option value="">  </option><option value=" ) "> ) </option></select>';
+		var optionRela = '<select class="form-control"><option value="">  </option><option value=" AND "> AND </option><option value=" OR "> OR </option></select>';
+		var deleteButton = '<button type="button" class="btn btn-warning" onClick="deleteCurrentRow(this)"><span class="glyphicon glyphicon-remove"> 删 除 </span></button>';
+	
+		var whereConditionSQL = '';
+		var havingConditionSQL = '';
+		var groupClauseSQL = '';
+		var groupMode = 'N';
+		// 当前数据表格加载的数据表名称
+		var $dataTable = $('#dataTable');
+		// 当前数据集展示的表名
+		var table = "";
+		// 当前数据集表头信息
+		var columsArray = new Array();
+		// 本次查询所涉及的数据表清单
+		var selectTables = new Array();
+		var beginTime,
+			endTime;
+	
+		// 删除选中统计字段
+		function deleteSelectNode(value) {
+			let mapValue = $(value).attr("ybzd");
+			// 从队列中删除已取消的字段
+			selectArray.remove(mapValue);
+			// 从DOM中删除对应字段内容
+			value.remove();
+			if (selectArray.length > 0) {
+				$('#queryfields').removeClass('searchColumn');
+			} else {
+				$('#queryfields').addClass('searchColumn');
+			}
+		}
+	
+		// 删除选中筛选字段
+		function deleteFilterNode(value) {
+			let mapValue = $(value).attr("ybzd");
+			// 从队列中删除已取消的字段
+			filterArray.remove(mapValue);
+			// 从DOM中删除对应字段内容
+			value.remove();
+			if (selectArray.length > 0) {
+				$('#filterArray').removeClass('searchColumn');
+			} else {
+				$('#filterArray').addClass('searchColumn');
+			}
+		}
+	
+		$(document).ready(function() {
+		 	$( "#tabs1" ).tabs();
+		 	$( "#tabs2" ).tabs();
+		 	$( "#tabs3" ).tabs();
+		 	$( "#tabs4" ).tabs();
+			$.ajax({
+				url : 'getSjyByExampleZTree',
+				type : 'POST', //GET
+				async : true, //或false,是否异步
+				data : {
+					zdbm : '000',
+				},
+				dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
+				success : function(data, textStatus, jqXHR) {
+					//console.log(data);
+					//console.log(JSON.parse(data));
+					t = $.fn.zTree.init(t, setting, JSON.parse(data));
+				},
+				error : function(xhr, textStatus) {
+					console.log('错误')
+					console.log(xhr)
+					console.log(textStatus)
+				},
+				complete : function() {
+					//console.log('Ajax处理结束');
+				}
+			});
+			$("#sortablefield").sortable();
+			$("#sortablefield").disableSelection();
+		});
+	
+		// 提交查询处理按钮点击事件
+		function goSearch() {
+			let saveFlag = $("input[name='saveToGxh']:checked").val();
+			let myTableName = '';
+			if (typeof saveFlag !== 'undefined') {
+				saveFlag = 'Y';
+				myTableName = $('#myTableName').val();
+				if (myTableName === '') {
+					layer.alert('为了进行结果集再分析，需要给当前的结果集定义一个别名.');
+					return;
+				}
+			} else {
+				saveFlag = 'N';
+			}
+			beginTime = new Date();
+			whereConditionSQL = '';
+			groupClauseSQL = '';
+			havingConditionSQL = '';
+			// 是否需要进行分组处理标志
+			groupMode = 'N';
+			let list = $('#sortablefield').children();
+			if (list.length <= 0) {
+				layer.alert('您尚未选择任何查询字段.');
+				return;
+			}
+			// 参数对象封装
+			let paramsObject = new Object();
+			selectTables = new Array();
+			let zjbz = 'N';
+			let continueCompare = true;
+			list.each(function(id, value) {
+				let obj = new Object();
+				obj.zdbm = $(value).attr('zdbm');
+				obj.ybmc = $(value).attr('ybmc');
+				obj.ybzd = $(value).attr('ybzd');
+				obj.sjlx = $(value).attr('sjlx');
+				obj.zjbz = $(value).attr('zjbz');
+				selectTables.push(obj);
+				// 判断字段是否包含主键字段
+				if ($(value).attr('zjbz') === 'Y') {
+					zjbz = 'Y';
+				}
+				// 拼装GroupBy条件的字段内容
+				if ($(value).attr('jhbz') == 'N') {
+					groupClauseSQL += $(value).attr('ybzd') + ',';
+				} else {
+					groupMode = 'Y';
+				}
+			});
+	
+			// 去掉最后多余的逗号
+			groupClauseSQL = groupClauseSQL.substring(0, groupClauseSQL.length - 1);
+			// console.log(selectTables);
+			// 处理Where条件，将结果装载到whereConditionSQL
+			dealWhereClause();
+			//console.log("havingConditionSQL:" + havingConditionSQL);
+			//console.log("groupMode:" + groupMode);
+			paramsObject.selectTables = selectTables;
+			paramsObject.whereClause = whereConditionSQL;
+			paramsObject.havingClause = havingConditionSQL;
+			paramsObject.groupClause = groupClauseSQL;
+			paramsObject.groupFlag = groupMode;
+			paramsObject.saveFlag = saveFlag;
+			paramsObject.myTableName = myTableName;
+			// 展示加载层
+			layer.load();
+			// 屏蔽查询按钮
+			$("#searchButton").attr("disabled", true);
+			if (zjbz === 'N' && saveFlag === 'Y') {
+				layer.msg('重要提醒：您当前的结果集不包含主键字段，如基于此结果集与其他数据集进行关联查询，将无法保障数据的准确性。但您仍可以对此结果集进行再次筛选分析。');
+			}
+			$.ajax({
+				url : 'dealSelectedSQL',
+				type : 'POST', //GET
+				contentType : 'application/json',
+				async : true, //或false,是否异步
+				data : JSON.stringify(paramsObject),
+				//timeout : 5000, //超时时间
+				dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
+				success : function(data, textStatus, jqXHR) {
+					let executeSql = data.sql;
+					if (executeSql === "") {
+						layer.alert("您选择的字段之间无法准确进行关联查询，请重新选择要查询的字段，谢谢.");
+						// 关闭加载层
+						layer.closeAll('loading');
+						return;
+					}
+					var columns = data.columns;
+					columsArray = [];
+					// 给表头字段添加辅助属性
+					for (var i = 0; i < columns.length; i++) {
+						var obj = new Object();
+						obj = columns[i];
+						obj.sortable = true;
+						obj.align = 'center';
+						columsArray.push(obj);
+					}
+					table = data.tableName;
+	
+					// 初始化数据表格
+					$dataTable.bootstrapTable('destroy');
+					$dataTable.bootstrapTable({
+						url : "getTableDataByTableName",
+						dataType : "json",
+						singleSelect : false,
+						datalocale : "zh-US", //表格汉化
+						search : false, //显示搜索框
+						sidePagination : "server", //服务端处理分页
+						//height : tableHeight(), //高度调整
+						pagination : true, //是否分页
+						pageSize : 20, //单页记录数
+						pageList : [ 5, 10, 20, 50 ], //分页步进值
+						sidePagination : "server", //服务端分页
+						contentType : "application/x-www-form-urlencoded", //请求数据内容格式 默认是 application/json 自己根据格式自行服务端处理
+						method : "post", //请求方式
+						//searchAlign : "right", //查询框对齐方式
+						queryParamsType : "limit", //查询参数组织方式
+						queryParams : function getParams(params) {
+							params.tableName = table;
+							return params;
+						},
+						//searchOnEnterKey : true, //回车搜索
+						//showRefresh : true, //刷新按钮
+						//showColumns : true, //列选择按钮
+						//buttonsAlign : "right", //按钮对齐方式
+						toolbar : "#toolbar", //指定工具栏
+						toolbarAlign : "right", //工具栏对齐方式
+						columns : columsArray,
+						onLoadSuccess : function(data) {
+							// 关闭加载层
+							layer.closeAll('loading');
+							// 恢复统计按钮状态
+							$("#searchButton").attr("disabled", false);
+							endTime = new Date();
+							let totalTime = Math.round((endTime.getTime() - beginTime.getTime()) / 1000);
+							layer.alert("本次统计总共耗时： " + totalTime + " 秒", function() {
+								layer.alert('本次查询系统自动生成的SQL语句是:' + executeSql);
+							});
+						},
+						onPageChange : function(data) {
+							// 翻页的时候重新计算开始时间
+							beginTime = new Date();
+						},
+						onLoadError : function() {
+							// 关闭加载层
+							layer.closeAll('loading');
+							// 恢复统计按钮状态
+							$("#searchButton").attr("disabled", false);
+						}
+					});
+				},
+				error : function(xhr, textStatus) {
+					// 关闭加载层
+					layer.closeAll('loading');
+					$("#searchButton").attr("disabled", false);
+					console.log('错误')
+					console.log(xhr)
+				},
+				complete : function() {
+					// console.log('Ajax处理结束')
+				}
+			});
+		}
+	
+		// 添加Where条件选择行
+		function addWhereClause() {
+			//let list = $('#sortablefield').children();
+			let list = $('#filterColumn').children();
+			if (list.length <= 0) {
+				layer.alert('您尚未选择任何查询字段.');
+				return;
+			}
+			let whereClause = $('#whereArea');
+			let innerHTML = '<div class="whereClauseColumn form-inline">';
+			let temp = optionBefore + '<select class="form-control" onChange="refreshInputDataType(this)" ><option value="none">-----选择字段-----</option>';
+			list.each(function(id, value) {
+				temp += "<option value='" + $(value).attr('ybzd') + "." + $(value).attr('jhbz') + "." + $(value).attr('sjlx') + "' zdbm='" + $(value).attr('zdbm') + "' xlzdbm='" + $(value).attr('xlzdbm') + "'>" + $(value).attr('zdmc') + "</option>";
+			});
+			innerHTML += temp + '</select>' + optionString;
+			let tempValue = "<input type=text class='form-control'/>";
+			tempValue += optionAfter + optionRela + deleteButton;
+			innerHTML += tempValue + '</div>';
+			whereClause.append(innerHTML);
+		}
+	
+		// 对SQL语句的Where和Having条件进行处理
+		function dealWhereClause() {
+			let list = $('#whereArea').children();
+			// 遍历筛选区域的所有DOM，并提取相关属性
+			list.each(function(id, value) {
+				//console.log(value);
+				let columnType = '',
+					columnName = '',
+					jhbz = '',
+					swapString = '';
+				$(value).children().each(function(id, value) {
+					// 字段名称特殊处理
+					if (id == 1) {
+						// 获取字段名称
+						columnName = $(value).val().substr(0, $(value).val().length - 4);
+						// 获取字段类型，主要用于拼装SQL时对不同类型的字段进行处理[C:字符,N:数字,T:时间]
+						columnType = $(value).val().substr($(value).val().length - 1, 1);
+						// 聚合标志，判断该字段是否属于聚合类型的字段
+						jhbz = $(value).val().substr($(value).val().length - 3, 1);
+						//console.log("jhbz:" + jhbz);
+						//whereConditionSQL += columnName;
+						swapString = columnName;
+					} else if (id == 3) {
+						let tzbz = (typeof ($(value).find("option:selected").attr("tzbz")) == 'undefined') ? "N" : $(value).find("option:selected").attr("tzbz");
+						// 拓展下拉字段需特殊处理
+						if (tzbz == 'N') {
+							if( (columnType == 'C' || columnType == 'T') ) {
+								// whereConditionSQL = whereConditionSQL + '\'' + $(value).val() + '\'';
+								swapString = swapString + '\'' + $(value).val() + '\'';
+							} else {
+								//whereConditionSQL += $(value).val();
+								swapString += $(value).val();
+							}
+						} else {
+							// 获取拓展字段需要涉及到的数据表
+							let ybObject = new Object();
+							ybObject.ybmc = $(value).find("option:selected").attr("ybmc");
+							ybObject.ybzd = '';
+							// 将拓展下拉涉及的数据表加入本次查询所涉及的数据表清单
+							selectTables.push(ybObject);
+							//去掉前面的操作符标志位
+							//swapString = swapString.substtring(0,tempString.length - 1)
+							//console.log("最后出现空格的地方：" + swapString.trim().lastIndexOf(' '));
+							swapString = swapString.substring(0, swapString.trim().lastIndexOf(' '));
+							// 因后台返回的数值为01,02,03样式的字符串，所以需要进行分割处理
+							let dropDownValues = $(value).val().split(',');
+							let arrayLength = dropDownValues.length;
+							let tempString = ' IN (';
+							for (let i = 0; i < arrayLength; i++) {
+								if( (columnType == 'C' || columnType == 'T') ) {
+									tempString += '\'' + dropDownValues[i] + '\',';
+								} else {
+									tempString += dropDownValues[i] + ',';
+								}
+							}
+							tempString = tempString.substring(0, tempString.length - 1) + ')';
+							swapString += tempString;
+						}
+					} else if (id != 6) {
+						// whereConditionSQL += $(value).val();
+						swapString += $(value).val();
+					}
+				}
+				);
+				// 根据当前条件是否为聚合字段，选择放入到Where部分还是Having部分
+				if (jhbz != 'Y') {
+					whereConditionSQL += swapString;
+				} else {
+					groupMode = 'Y';
+					console.log('聚合字段:' + columnName);
+					havingConditionSQL += swapString;
+				}
+			});
+			//----处理多余的AND 和 OR
+			let abc = whereConditionSQL.lastIndexOf(" ");
+			var lengthIndex = whereConditionSQL.length - 1;
+			//console.log("abc:" + abc + "，length:" + length);
+			if (abc == lengthIndex) {
+				whereConditionSQL = whereConditionSQL.substring(0, whereConditionSQL.length - 4);
+			}
+			abc = havingConditionSQL.lastIndexOf(" ");
+			lengthIndex = havingConditionSQL.length - 1;
+			//console.log("abc:" + abc + "，length:" + length);
+			if (abc == lengthIndex) {
+				havingConditionSQL = havingConditionSQL.substring(0, havingConditionSQL.length - 4);
+			}
+		//console.log('whereConditionSQL:' + whereConditionSQL);
+		//console.log('havingConditionSQL:' + havingConditionSQL);
+		}
+	
+		// 删除当前行的筛选条件
+		function deleteCurrentRow(value) {
+			$(value).parent().remove();
+		}
+	
+		// 更新
+		function refreshInputDataType(value) {
+			let xlzdbm = $(value).find("option:selected").attr("xlzdbm");
+			$.ajax({
+				url : 'getColumnDropDownList',
+				type : 'POST', //GET
+				contentType : 'application/x-www-form-urlencoded',
+				async : true, //或false,是否异步
+				data : {
+					xlzdbm : xlzdbm,
+				},
+				//timeout : 5000, //超时时间
+				dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
+				success : function(data, textStatus, jqXHR) {
+					//console.log(data);
+					if (data.result.length > 0) {
+						//console.log($(value).parent());
+						//console.log($(value).next().next());
+						let selectOption = '<select class="form-control">';
+						let optionString = '';
+						// 下拉菜单拓展标志位
+						let tzFlag = 'N';
+						let newOptionValue = '';
+						for (let i = 0; i < data.result.length; i++) {
+							tzFlag = data.result[i].tzbz;
+							newOptionValue = data.result[i].ybzd;
+							optionString += '<option value="' + data.result[i].sjz + '" tzbz="' + data.result[i].tzbz + '" ybmc="' + data.result[i].ybmc + '">' + data.result[i].xsz + '</option>';
+						}
+						selectOption += optionString + '</select>';
+						if (tzFlag == 'Y') {
+							// 将Option中的Value换成拓展以后的值
+							let oldOptionValue = $(value).find("option:selected").attr("value");
+							newOptionValue += oldOptionValue.substring(oldOptionValue.length - 4);
+							$(value).find("option:selected").attr("value", newOptionValue);
+						//console.log($(value).find("option:selected").attr("value"));
+						}
+						let replaceNode = $(value).next().next();
+						$(replaceNode).before(selectOption);
+						replaceNode.remove();
+					} else {
+						let replaceNode = $(value).next().next();
+						let inputNode = "<input type=text class='form-control'/>";
+						$(replaceNode).before(inputNode);
+						replaceNode.remove();
+					}
+				}
+			});
+		}
+	
+		function exportData() {
+			if ($dataTable.bootstrapTable('getData').length <= 0 || table == "") {
+				layer.msg('当前无可导出数据', {
+					icon : 1
+				});
+				return;
+			}
+			$.ajax({
+				url : 'exportData',
+				type : 'POST', //GET
+				contentType : 'application/x-www-form-urlencoded',
+				async : true, //或false,是否异步
+				data : {
+					tableName : table,
+				},
+				//timeout : 5000, //超时时间
+				dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
+				success : function(data, textStatus, jqXHR) {
+					//layer.alert('文件已生成，文件名为:' + data.fileName);
+					window.location = "ftp://192.168.0.200/" + data.fileName;
+				}
+			});
 		}
 	</script>
 </body>
+
 </html>
