@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 
 <meta charset="utf-8">
@@ -10,349 +9,221 @@
 <meta name="author" content="">
 
 <title>营销业务分析及数据转换平台</title>
-
 <!-- Bootstrap Core CSS -->
-<link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
-<!-- MetisMenu CSS -->
-<link href="vendor/metisMenu/metisMenu.min.css" rel="stylesheet">
-
-<!-- Custom CSS -->
-<link href="dist/css/sb-admin-2.css" rel="stylesheet">
-
-<!-- Morris Charts CSS -->
-<link href="vendor/morrisjs/morris.css" rel="stylesheet">
-
-<!-- Custom Fonts -->
-<link href="vendor/font-awesome/css/font-awesome.min.css"
-	rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="css/jquery-ui.min.css">
+<link href="css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="css/bootstrap-table.min.css">
 <link rel="stylesheet" href="css/myApp.css" />
-
+<link rel="stylesheet" href="css/zTreeStyle/metro.css" type="text/css">
 </head>
 
 <body>
-	<div id="wrapper">
-		<!-- Navigation -->
-		<nav class="navbar navbar-default navbar-static-top" role="navigation"
-			style="margin-bottom: 0">
-			<div class="navbar-header">
-				<button type="button" class="navbar-toggle" data-toggle="collapse"
-					data-target=".navbar-collapse">
-					<span class="sr-only">Toggle navigation</span> <span
-						class="icon-bar"></span> <span class="icon-bar"></span> <span
-						class="icon-bar"></span>
-				</button>
-				<a class="navbar-brand" href="index.html">核心功能DEMO</a>
-			</div>
-			<!-- /.navbar-header -->
-
-			<ul class="nav navbar-top-links navbar-right">
-				<li class="dropdown"><a class="dropdown-toggle"
-					data-toggle="dropdown" href="#"> <i
-						class="fa fa-envelope fa-fw"></i> <i class="fa fa-caret-down"></i>
-				</a>
-					<ul class="dropdown-menu dropdown-messages">
-						<li><a href="#">
-								<div>
-									<strong>John Smith</strong> <span class="pull-right text-muted">
-										<em>Yesterday</em>
-									</span>
-								</div>
-								<div>Lorem ipsum dolor sit amet, consectetur adipiscing
-									elit. Pellentesque eleifend...</div>
-						</a></li>
-						<li class="divider"></li>
-						<li><a href="#">
-								<div>
-									<strong>John Smith</strong> <span class="pull-right text-muted">
-										<em>Yesterday</em>
-									</span>
-								</div>
-								<div>Lorem ipsum dolor sit amet, consectetur adipiscing
-									elit. Pellentesque eleifend...</div>
-						</a></li>
-						<li class="divider"></li>
-						<li><a href="#">
-								<div>
-									<strong>John Smith</strong> <span class="pull-right text-muted">
-										<em>Yesterday</em>
-									</span>
-								</div>
-								<div>Lorem ipsum dolor sit amet, consectetur adipiscing
-									elit. Pellentesque eleifend...</div>
-						</a></li>
-						<li class="divider"></li>
-						<li><a class="text-center" href="#"> <strong>Read
-									All Messages</strong> <i class="fa fa-angle-right"></i>
-						</a></li>
-					</ul> <!-- /.dropdown-messages --></li>
-				<!-- /.dropdown -->
-				<li class="dropdown"><a class="dropdown-toggle"
-					data-toggle="dropdown" href="#"> <i class="fa fa-tasks fa-fw"></i>
-						<i class="fa fa-caret-down"></i>
-				</a>
-					<ul class="dropdown-menu dropdown-tasks">
-						<li><a href="#">
-								<div>
-									<p>
-										<strong>Task 1</strong> <span class="pull-right text-muted">40%
-											Complete</span>
-									</p>
-									<div class="progress progress-striped active">
-										<div class="progress-bar progress-bar-success"
-											role="progressbar" aria-valuenow="40" aria-valuemin="0"
-											aria-valuemax="100" style="width: 40%">
-											<span class="sr-only">40% Complete (success)</span>
-										</div>
-									</div>
-								</div>
-						</a></li>
-						<li class="divider"></li>
-						<li><a href="#">
-								<div>
-									<p>
-										<strong>Task 2</strong> <span class="pull-right text-muted">20%
-											Complete</span>
-									</p>
-									<div class="progress progress-striped active">
-										<div class="progress-bar progress-bar-info" role="progressbar"
-											aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"
-											style="width: 20%">
-											<span class="sr-only">20% Complete</span>
-										</div>
-									</div>
-								</div>
-						</a></li>
-						<li class="divider"></li>
-						<li><a href="#">
-								<div>
-									<p>
-										<strong>Task 3</strong> <span class="pull-right text-muted">60%
-											Complete</span>
-									</p>
-									<div class="progress progress-striped active">
-										<div class="progress-bar progress-bar-warning"
-											role="progressbar" aria-valuenow="60" aria-valuemin="0"
-											aria-valuemax="100" style="width: 60%">
-											<span class="sr-only">60% Complete (warning)</span>
-										</div>
-									</div>
-								</div>
-						</a></li>
-						<li class="divider"></li>
-						<li><a href="#">
-								<div>
-									<p>
-										<strong>Task 4</strong> <span class="pull-right text-muted">80%
-											Complete</span>
-									</p>
-									<div class="progress progress-striped active">
-										<div class="progress-bar progress-bar-danger"
-											role="progressbar" aria-valuenow="80" aria-valuemin="0"
-											aria-valuemax="100" style="width: 80%">
-											<span class="sr-only">80% Complete (danger)</span>
-										</div>
-									</div>
-								</div>
-						</a></li>
-						<li class="divider"></li>
-						<li><a class="text-center" href="#"> <strong>See
-									All Tasks</strong> <i class="fa fa-angle-right"></i>
-						</a></li>
-					</ul> <!-- /.dropdown-tasks --></li>
-				<!-- /.dropdown -->
-				<li class="dropdown"><a class="dropdown-toggle"
-					data-toggle="dropdown" href="#"> <i class="fa fa-bell fa-fw"></i>
-						<i class="fa fa-caret-down"></i>
-				</a>
-					<ul class="dropdown-menu dropdown-alerts">
-						<li><a href="#">
-								<div>
-									<i class="fa fa-comment fa-fw"></i> New Comment <span
-										class="pull-right text-muted small">4 minutes ago</span>
-								</div>
-						</a></li>
-						<li class="divider"></li>
-						<li><a href="#">
-								<div>
-									<i class="fa fa-twitter fa-fw"></i> 3 New Followers <span
-										class="pull-right text-muted small">12 minutes ago</span>
-								</div>
-						</a></li>
-						<li class="divider"></li>
-						<li><a href="#">
-								<div>
-									<i class="fa fa-envelope fa-fw"></i> Message Sent <span
-										class="pull-right text-muted small">4 minutes ago</span>
-								</div>
-						</a></li>
-						<li class="divider"></li>
-						<li><a href="#">
-								<div>
-									<i class="fa fa-tasks fa-fw"></i> New Task <span
-										class="pull-right text-muted small">4 minutes ago</span>
-								</div>
-						</a></li>
-						<li class="divider"></li>
-						<li><a href="#">
-								<div>
-									<i class="fa fa-upload fa-fw"></i> Server Rebooted <span
-										class="pull-right text-muted small">4 minutes ago</span>
-								</div>
-						</a></li>
-						<li class="divider"></li>
-						<li><a class="text-center" href="#"> <strong>See
-									All Alerts</strong> <i class="fa fa-angle-right"></i>
-						</a></li>
-					</ul> <!-- /.dropdown-alerts --></li>
-				<!-- /.dropdown -->
-				<li class="dropdown"><a class="dropdown-toggle"
-					data-toggle="dropdown" href="#"> <i class="fa fa-user fa-fw"></i>
-						<i class="fa fa-caret-down"></i>
-				</a>
-					<ul class="dropdown-menu dropdown-user">
-						<li><a href="#"><i class="fa fa-user fa-fw"></i> User
-								Profile</a></li>
-						<li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>
-						</li>
-						<li class="divider"></li>
-						<li><a href="login.html"><i class="fa fa-sign-out fa-fw"></i>
-								Logout</a></li>
-					</ul> <!-- /.dropdown-user --></li>
-				<!-- /.dropdown -->
-			</ul>
-			<!-- /.navbar-top-links -->
-			<!-- 树状侧边栏菜单 -->
-			<div class="navbar-default sidebar" role="navigation">
-				<div class="sidebar-nav navbar-collapse">
-					<ul class="nav" id="side-menu">
-						<li class="sidebar-search">
-							<div class="input-group custom-search-form">
-								<input id="input-select-node" type="text" class="form-control"
-									placeholder="Search..."> <span class="input-group-btn">
-									<button class="btn btn-default" type="button">
-										<i class="fa fa-search"></i>
-									</button>
-								</span>
-							</div> <!-- /input-group -->
-						</li>
-						<div id="treeview1" style="height:690px; overflow:auto"
-							class="treeview"></div>
+	<div class="page">
+		<div class="page-head">核心功能DEMO</div>
+		<div class="frame">
+			<div id="treeview1" class="ztree treeview"></div>
+			<div id="page-wrapper" class="page-wrapper">
+				<div id="tabs1">
+					<ul>
+						<li><a href="#tabs1-1">查询字段列表</a></li>
 					</ul>
-				</div>
-				<!-- /.sidebar-collapse -->
-
-			</div>
-			<!-- /.navbar-static-side -->
-		</nav>
-
-		<div id="page-wrapper">
-			<div class="row">
-				<div class="col-lg-12">
-					<h5>统计字段：</h5>
-					<div class="panel panel-default">
-						<div id="queryfields" class="panel-heading searchColumn">
-							<ul id="sortablefield">
-								<!-- 侧边栏双击选择的字段将被动态添加到这里 -->
-							</ul>
+					<div id="tabs1-1">
+						<div class="searchColumn-border">
+							<div id="queryfields" class="panel-heading searchColumn">
+								<ul id="sortablefield">
+									<!-- 侧边栏双击选择的字段将被动态添加到这里 -->
+								</ul>
+							</div>
 						</div>
 					</div>
 				</div>
-				<div class="col-lg-12">
-					<h5>筛选字段：</h5>
-					<div class="panel panel-default">
-						<div id="filterfields" class="panel-heading searchColumn">
-							<ul id="filterColumn" class="ui-sortable">
-								<!-- 侧边栏双击选择的字段将被动态添加到这里 -->
-							</ul>
+				<div id="tabs2">
+					<ul>
+						<li><a href="#tabs2-1">筛选字段列表</a></li>
+					</ul>
+					<div id="tabs2-1">
+						<div class="searchColumn-border">
+							<div id="filterfields" class="panel-heading searchColumn">
+								<ul id="filterColumn">
+									<!-- 侧边栏双击选择的字段将被动态添加到这里 -->
+								</ul>
+							</div>
 						</div>
 					</div>
 				</div>
-				<div class="col-lg-12">
-					<div class="panel panel-default whereConditionPanel">
-						<div class="whereCondition">
-							<p>
-								筛选条件：
-								<button type="button" class="btn btn-primary btn-sm"
-									onclick="addWhereClause()">
-									<span class="glyphicon glyphicon-plus"> 添 加 </span>
+				<div id="tabs3">
+					<ul>
+						<li><a href="#tabs3-1">基础筛选设置</a></li>
+					</ul>
+					<div id="tabs3-1">
+						<button type="button" class="btn  btn-default btn-sm"
+							onclick="addWhereClause()">
+							<span class="glyphicon glyphicon-plus"> 添 加 </span>
+						</button>
+						<button type="button" class="btn  btn-default btn-sm"
+							id="searchButton">
+							<span class="glyphicon glyphicon-search" onClick="goSearch()">
+								查 询 </span>
+						</button>
+						<input type="checkbox" name="saveToGxh" id="saveToGxh">结果再分析</input>
+						<input type="text" id="myTableName" placeholder="给当前结果集起个别名" /> <br>
+						<div class="whereArea" id="whereArea"></div>
+					</div>
+				</div>
+				<div id="tabs4">
+					<ul>
+						<li><a href="#tabs4-1">统计结果展示</a></li>
+					</ul>
+					<div id="tabs4-1">
+						<div class="searchColumn-border">
+							<div class="result-heading">
+								<button type="button" class="btn btn-sm btn-export"
+									aria-label="Left Align" onClick="exportData()">
+									<span class="glyphicon glyphicon-export glyphicon-align-left"
+										aria-hidden="true"></span> 结果导出
 								</button>
-								<button type="button" class="btn btn-primary btn-sm"
-									id="searchButton">
-									<span class="glyphicon glyphicon-search" onClick="goSearch()">
-										查 询 </span>
-								</button>
-								<input type="checkbox" name="saveToGxh" id="saveToGxh">结果再分析</input>
-								<input type="text" id="myTableName" placeholder="给当前结果集起个别名" />
-							</p>
-							</br>
-							<div class="whereArea" id="whereArea"></div>
+							</div>
+							<!-- /.panel-heading -->
+							<div class="panel-body" style="overflow:auto">
+								<table width="100%"
+									class="table table-striped table-bordered table-hover"
+									id="dataTable">
+								</table>
+								<!-- /.table -->
+							</div>
 						</div>
 					</div>
 				</div>
-				<!-- /.col-lg-12 -->
 			</div>
-			<!-- 数据表 -->
-			<div class="row">
-				<div class="col-lg-12">
-					<div class="panel panel-default resultPanel">
-						<div class="panel-heading">
-							<div class="panel-heading-tile">统计结果</div>
-							<button type="button" class="btn btn-default btn-export"
-								aria-label="Left Align" onClick="exportData()">
-								<span class="glyphicon glyphicon-export glyphicon-align-left"
-									aria-hidden="true"></span> 结果导出
-							</button>
-						</div>
-						<!-- /.panel-heading -->
-						<div class="panel-body" style="overflow:auto">
-							<table width="100%"
-								class="table table-striped table-bordered table-hover"
-								id="dataTable">
-							</table>
-							<!-- /.table -->
-						</div>
-						<!-- /.panel-body -->
-					</div>
-					<!-- /.panel -->
-				</div>
-				<!-- /.col-lg-12 -->
-			</div>
-			<!-- /.row -->
 		</div>
-		<!-- /#page-wrapper -->
-
 	</div>
+
 	<!-- /#wrapper -->
 
 	<!-- jQuery -->
 	<script src="js/jquery-3.3.1.min.js"></script>
-
+	<script src="js/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="js/zTree/jquery.ztree.all.min.js"></script>
 	<!-- Bootstrap Core JavaScript -->
 	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
-
-	<!-- Metis Menu Plugin JavaScript -->
-	<script src="vendor/metisMenu/metisMenu.min.js"></script>
-
 	<script src="js/bootstrap-table.js"></script>
-	<script src="js/bootstrap-table-export.js"></script>
-	<script src="js/tableExport.js"></script>
 	<script src="js/bootstrap-table-zh-CN.min.js">
-
-	<!-- Custom Theme JavaScript -->
-	<script src="dist/js/sb-admin-2.js"></script>
-	<script src="vendor/bootstrap/js/bootstrap-treeview.min.js"></script>
-	<!-- <script src="js/Sortable.min.js"></script> -->
-	<script src="js/jquery-ui.min.js"></script>
 	<script src="js/layer/layer.js"></script>
 	<script src="js/myTool.js"></script>
+	<script src="js/layer/layer.js"></script>
+
 
 	<script type="text/javascript">
+		var t = $("#treeview1");
+		var setting = {
+			async : {
+				enable : true,
+				url : "getSjyByExampleZTree",
+				autoParam : [ "zdbm", "sjybm" ],
+				dataType : "json",
+				otherParam : {
+				},
+				dataFilter : filter
+			},
+			data : {
+				key : {
+					name : 'zdmc',
+					isParent : "pnode"
+				},
+				simpleData : {
+					enable : true,
+					idKey : 'zdbm',
+					pIdKey : 'sjybm',
+				},
+			},
+			callback : { //回调函数  
+				onDblClick : zTreeDbClick,
+				onRightClick : zTreeRightClick,
+			}
+		};
+	
+		function filter(treeId, parentNode, childNodes) {
+			if (!childNodes) return null;
+			return childNodes;
+		}
+	
+		function zTreeDbClick(treeId, parentNode, childNodes) {
+			if (typeof (childNodes.ybzd) == 'undefined' || childNodes.ybzd == null) {
+				return false;
+			} else {
+				let data = childNodes;
+				// 已经添加过的元素不允许重复加入
+				if (selectArray.indexOf(data.ybzd) == -1) {
+					selectArray.push(data.ybzd);
+					let zdmc = "";
+					if(data.zjbz=='Y'){
+						zdmc = data.zdmc+'[🔑]';
+					}else{
+						zdmc = data.zdmc;
+					}
+					let newNode = '<li jhbz="' + data.jhbz + '" zjbz="' + data.zjbz + '" xlzdbm="' + data.xlzdbm + '" zdmc="' + data.zdmc + '" zdbm="' + data.zdbm + '" ybzd=\'' + data.ybzd + '\' ybmc="' + data.ybmc + '" sjlx="' + data.sjlx + '" ondblclick="deleteSelectNode(this)" class="btn  my-btn btn-sm" style="margin:2px;">' + zdmc + '</li>';
+					$("#sortablefield").append(newNode);
+					if (selectArray.length > 0) {
+						$('#queryfields').removeClass('searchColumn');
+					} else {
+						$('#queryfields').addClass('searchColumn');
+					}
+					return true;
+				} else {
+					layer.alert('该字段已添加到统计区.', {
+						icon : 6,
+						title : '温馨提示'
+					});
+					return false;
+				}
+			}
+		}
+	
+		function zTreeRightClick(treeId, parentNode, childNodes) {
+			if (typeof (childNodes.ybzd) == 'undefined') {
+				return false;
+			} else {
+				let data = childNodes;
+				// 首先检查该字段是否与已添加的字段存在关联性，即：筛选字段与已选择的某统计字段来源于同一张表
+				let list = $('#sortablefield').children();
+				let stopFlag = true;
+				list.each(function(id, value) {
+					if (data.ybmc == $(value).attr("ybmc")) {
+						stopFlag = false;
+						return false;
+					}
+				});
+				if (stopFlag) {
+					layer.alert('该筛选字段:【' + data.zdmc + '】与统计字段列表无强关联关系，无法为您提供准确筛选。');
+					return;
+				}
+				// 已经添加过的元素不允许重复加入
+				if (filterArray.indexOf(data.ybzd) == -1) {
+					filterArray.push(data.ybzd);
+					let newNodeFilter = '<li jhbz="' + data.jhbz + '" zjbz="' + data.zjbz + '" xlzdbm="' + data.xlzdbm + '" zdmc="' + data.zdmc + '" zdbm="' + data.zdbm + '" ybzd=\'' + data.ybzd + '\' ybmc="' + data.ybmc + '" sjlx="' + data.sjlx + '" ondblclick="deleteFilterNode(this)"  class="btn my-btn btn-sm" style="margin:2px;">' + data.zdmc + '</li>';
+					$("#filterColumn").append(newNodeFilter);
+					if (filterArray.length > 0) {
+						$('#filterfields').removeClass('searchColumn');
+					} else {
+						$('#filterfields').addClass('searchColumn');
+					}
+					return true;
+				} else {
+					layer.alert('该字段已添加到过滤区.', {
+						icon : 6,
+						title : '温馨提示'
+					});
+					return false;
+				}
+			}
+		}
 	
 		var defaultData = [];
 		var $selectableTree;
+		// 选择字段
 		var selectArray = new Array();
+		// 过滤字段
+		var filterArray = new Array();
 		var optionString = '<select class="form-control"><option value=" > "> > </option><option value=" >= "> >= </option><option value=" = "> = </option>'
 			+ '<option value=" < "> < </option><option value=" <= "> <= </option><option value=" IN "> IN </option><option value=" NOT IN "> NOT IN </option><option value=" LIKE "> LIKE </option></select>';
 		var optionBefore = '<select class="form-control"><option value="">  </option><option value=" ( "> ( </option></select>';
@@ -375,127 +246,13 @@
 		var beginTime,
 			endTime;
 	
-		//侧边栏菜单树内容查找
-		var findSelectableNodes = function() {
-			return $selectableTree.treeview('search', [ $('#input-select-node').val(), {
-				ignoreCase : false,
-				exactMatch : false
-			} ]);
-		};
-		//var selectableNodes = findSelectableNodes();
-	
-		// Select/unselect/toggle nodes
-		$('#input-select-node').on('keyup', function(e) {
-			if (e.keyCode != 13) {
-				//只响应回车事件
-				return;
-			}
-			selectableNodes = findSelectableNodes();
-			$('.select-node').prop('disabled', !(selectableNodes.length >= 1));
-	
-			var expandedNodes = new Array();
-			expandedNodes = $('#treeview1').treeview('getExpanded');
-			console.log(expandedNodes)
-			var nodeLength = $(expandedNodes).length;
-			var targetnodeId = $(selectableNodes).attr("nodeId");
-			var nodeCounts = 0;
-			for (var i = 0; i < nodeLength; i++) {
-				if (targetnodeId > $(expandedNodes[i]).attr("nodeId")) {
-					nodeCounts += $(expandedNodes[0]).attr("nodes").length;
-				}
-				else
-					break;
-			}
-			$("#treeview1").animate({
-				scrollTop : (nodeCounts + i) * 35 - $("#treeview1").offset().top
-			}, 100);
-		});
-	
-		//侧边栏菜单树双击添加查询字段
-		//最后一次触发节点Id
-		var lastSelectedNodeId = null;
-		//最后一次触发时间
-		var lastSelectTime = null;
-		//自定义业务方法
-		function treeDblClickBusiness(data) {
-			// 要是选中的不是叶子结点不予以处理
-			if (data.zdbm == null) {
-				layer.msg('此节点是数据域节点，您应该选择字段节点。');
-				return;
-			}
-			// 已经添加过的元素不允许重复加入
-			if (selectArray.indexOf(data.ybzd) == -1) {
-				selectArray.push(data.ybzd);
-				let newNode = '<li jhbz="' + data.jhbz + '" zjbz="' + data.zjbz + '" xlzdbm="' + data.xlzdbm + '" zdmc="' + data.zdmc + '" zdbm="' + data.zdbm + '" ybzd=\'' + data.ybzd + '\' ybmc="' + data.ybmc + '" sjlx="' + data.sjlx + '" ondblclick="deleteSelectNode(this)" class="btn btn-primary btn-sm" style="margin:2px;">' + data.zdmc + '</li>';
-				let newNodeFilter = '<li jhbz="' + data.jhbz + '" zjbz="' + data.zjbz + '" xlzdbm="' + data.xlzdbm + '" zdmc="' + data.zdmc + '" zdbm="' + data.zdbm + '" ybzd=\'' + data.ybzd + '\' ybmc="' + data.ybmc + '" sjlx="' + data.sjlx + '"  class="btn btn-primary btn-sm" style="margin:2px;">' + data.zdmc + '</li>';
-				$("#sortablefield").append(newNode);
-				$("#filterColumn").append(newNodeFilter);
-				if (selectArray.length > 0) {
-					$('#queryfields').removeClass('searchColumn');
-					$('#filterfields').removeClass('searchColumn');
-				} else {
-					$('#queryfields').addClass('searchColumn');
-					$('#filterfields').addClass('searchColumn');
-				}
-				return true;
-			} else {
-				layer.alert('该字段已添加.', {
-					icon : 6,
-					title : '温馨提示'
-				});
-				return false;
-			}
-		}
-	
-		function clickNode(event, data) {
-			if (lastSelectedNodeId && lastSelectTime) {
-				var time = new Date().getTime();
-				var t = time - lastSelectTime;
-				if (lastSelectedNodeId == data.nodeId && t < 300) {
-					treeDblClickBusiness(data);
-				}
-			}
-			lastSelectedNodeId = data.nodeId;
-			lastSelectTime = new Date().getTime();
-		}
-	
-		//自定义双击事件
-		function treeDblClickFun() {
-			//节点选中时触发
-			$('#treeview1').on('nodeSelected', function(event, data) {
-				clickNode(event, data)
-			});
-			//节点取消选中时触发
-			$('#treeview1').on('nodeUnselected', function(event, data) {
-				clickNode(event, data)
-			});
-		}
-		//自定义右键事件
-		function treeRightClickFun() {
-			//节点右键选中时触发
-			$('#treeview1').contextmenu(function(e) {
-				e = e || event;
-				var tag = e.target || e.srcElement;
-				console.log(tag);
-				return false;
-			});
-		}
-	
-		// 删除选中字段
+		// 删除选中统计字段
 		function deleteSelectNode(value) {
 			let mapValue = $(value).attr("ybzd");
 			// 从队列中删除已取消的字段
 			selectArray.remove(mapValue);
 			// 从DOM中删除对应字段内容
 			value.remove();
-			// 删除筛选字段里的内容
-			let filterColumns = $('#filterColumn').children();
-			for (let i = 0; i < filterColumns.length; i++) {
-				let swap = filterColumns[i];
-				if ($(swap).attr("ybzd") == mapValue) {
-					filterColumns[i].remove();
-				}
-			}
 			if (selectArray.length > 0) {
 				$('#queryfields').removeClass('searchColumn');
 			} else {
@@ -503,9 +260,27 @@
 			}
 		}
 	
+		// 删除选中筛选字段
+		function deleteFilterNode(value) {
+			let mapValue = $(value).attr("ybzd");
+			// 从队列中删除已取消的字段
+			filterArray.remove(mapValue);
+			// 从DOM中删除对应字段内容
+			value.remove();
+			if (selectArray.length > 0) {
+				$('#filterArray').removeClass('searchColumn');
+			} else {
+				$('#filterArray').addClass('searchColumn');
+			}
+		}
+	
 		$(document).ready(function() {
+		 	$( "#tabs1" ).tabs();
+		 	$( "#tabs2" ).tabs();
+		 	$( "#tabs3" ).tabs();
+		 	$( "#tabs4" ).tabs();
 			$.ajax({
-				url : 'getSjyByExample',
+				url : 'getSjyByExampleZTree',
 				type : 'POST', //GET
 				async : true, //或false,是否异步
 				data : {
@@ -513,30 +288,9 @@
 				},
 				dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
 				success : function(data, textStatus, jqXHR) {
-					defaultData = "[" + JSON.stringify(data) + "]";
-					//侧边栏菜单树内容查找
-					var initSelectableTree = function() {
-						return $('#treeview1').treeview({
-							expandIcon : 'glyphicon glyphicon-chevron-right',
-							collapseIcon : 'glyphicon glyphicon-chevron-down',
-							nodeIcon : 'glyphicon',
-							color : "#428bca",
-							data : defaultData,
-							onMouseDown : function(event, node) {
-								if (event.which === 3)
-									$("#test_id").html('<span>你按下了右键</span>');
-							}
-						});
-					};
-					$selectableTree = initSelectableTree();
-					//页面加载后
-					//加载侧边栏
-					treeDblClickFun();
-					//查询字段动态处理
-					$("#sortablefield").sortable();
-					$("#sortablefield").disableSelection();
-					//右键处理
-					treeRightClickFun();
+					//console.log(data);
+					//console.log(JSON.parse(data));
+					t = $.fn.zTree.init(t, setting, JSON.parse(data));
 				},
 				error : function(xhr, textStatus) {
 					console.log('错误')
@@ -547,6 +301,8 @@
 					//console.log('Ajax处理结束');
 				}
 			});
+			$("#sortablefield").sortable();
+			$("#sortablefield").disableSelection();
 		});
 	
 		// 提交查询处理按钮点击事件
@@ -715,7 +471,8 @@
 	
 		// 添加Where条件选择行
 		function addWhereClause() {
-			let list = $('#sortablefield').children();
+			//let list = $('#sortablefield').children();
+			let list = $('#filterColumn').children();
 			if (list.length <= 0) {
 				layer.alert('您尚未选择任何查询字段.');
 				return;
@@ -896,7 +653,7 @@
 				dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
 				success : function(data, textStatus, jqXHR) {
 					//layer.alert('文件已生成，文件名为:' + data.fileName);
-					window.location = "ftp://localhost/" + data.fileName;
+					window.location = "ftp://172.16.12.167/" + data.fileName;
 				}
 			});
 		}

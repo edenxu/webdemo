@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.gson.Gson;
 
 import cn.com.gxbolian.databank.dao.IGreenplumCommonDAO;
+import cn.com.gxbolian.databank.dao.XtpzBzhzjpzMapper;
 import cn.com.gxbolian.databank.dao.XtpzSjglysGxhMapper;
 import cn.com.gxbolian.databank.dao.XtpzSjglysMapper;
 import cn.com.gxbolian.databank.dao.XtpzSjyGxhMapper;
@@ -35,6 +36,8 @@ import cn.com.gxbolian.databank.dao.XtpzXlcsMapper;
 import cn.com.gxbolian.databank.dao.XtpzXlcstzMapper;
 import cn.com.gxbolian.databank.entity.BootstrapTreeViewEntity;
 import cn.com.gxbolian.databank.entity.ParamsObject;
+import cn.com.gxbolian.databank.entity.XtpzBzhzjpz;
+import cn.com.gxbolian.databank.entity.XtpzBzhzjpzExample;
 import cn.com.gxbolian.databank.entity.XtpzSjglys;
 import cn.com.gxbolian.databank.entity.XtpzSjglysExample;
 import cn.com.gxbolian.databank.entity.XtpzSjglysGxh;
@@ -76,6 +79,8 @@ public class DemoServiceImpl implements IDemoService {
 	private XtpzSjyGxhMapper sjyGxhDao;
 	@Autowired
 	private XtpzSjglysGxhMapper sjglGxhDao;
+	@Autowired
+	private XtpzBzhzjpzMapper bzhzjpzDao;
 	@Autowired
 	private IGreenplumCommonDAO greenplumCommonDAOImpl;
 
@@ -189,6 +194,20 @@ public class DemoServiceImpl implements IDemoService {
 				swap.setXlzdbm(gxh.getXlzdbm());
 				sjzdList.add(swap);
 			}
+			// 补充标准化组件的部分
+			if ("888".equals(nodeId)) {
+				XtpzBzhzjpzExample sjzdBzhzjpzxample = new XtpzBzhzjpzExample();
+				sjzdBzhzjpzxample.createCriteria().andSjybmEqualTo(nodeId);
+				sjzdBzhzjpzxample.setOrderByClause(" lsh asc");
+				List<XtpzBzhzjpz> bzhzjpzList = bzhzjpzDao.selectByExample(sjzdBzhzjpzxample);
+				for (XtpzBzhzjpz bzhzjpz : bzhzjpzList) {
+					XtpzSjzd swap = new XtpzSjzd();
+					swap.setZdbm(bzhzjpz.getLsh());
+					swap.setSjybm(bzhzjpz.getSjybm());
+					swap.setZdmc(bzhzjpz.getMc());
+					sjzdList.add(swap);
+				}
+			}
 		}
 		return gson.toJson(sjzdList);
 	}
@@ -236,9 +255,6 @@ public class DemoServiceImpl implements IDemoService {
 		String[] tableArray = CommonUtil.TableListDuplicateRemoval(object.getSelectTables());
 		log.info("tableArray:" + new Gson().toJson(tableArray));
 		// 获取需要查询的字段内容
-		// selectColumns =
-		// CommonUtil.pickUpSelectedColumns(object.getSelectTables());
-
 		String tableNickName = object.getMyTableName();
 		String fromTablesAndRelation = makeUpFromTablesAndColumnRelation(tableArray, operator);
 		// 如果fromTablesAndRelation字段为空串，则表示相关节点无法联通，直接返回空串到前台
@@ -740,8 +756,6 @@ public class DemoServiceImpl implements IDemoService {
 		for (int i = 0; i < j; i++) {
 			/** 源表字段非空的情况下才放到SELECT字段列表，因为部分因Where条件拓展引入的数据表只有表名称、无字段，并且是不需要字段展示的，需要排除掉 */
 			if (null != list.get(i).getYbzd() && !"".equals(list.get(i).getYbzd())) {
-				// sb.append(list.get(i).getYbzd()).append(" AS
-				// \"").append(list.get(i).getYbzd()).append("\",");
 				sb.append(list.get(i).getYbzd()).append(" AS ").append("C" + i).append(",");
 
 				// 主键标志

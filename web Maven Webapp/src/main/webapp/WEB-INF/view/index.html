@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-cmn-Hans">
 <head>
-
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="">
@@ -98,6 +97,17 @@
 		</div>
 	</div>
 
+	<!-- 标准化组件配置对话框 -->
+	<div id="dialog-form" title="标准化组件配置">
+		<p class="validateTips"></p>
+		<form class='bzhzjpz-form'>
+			<fieldset class='bzhzjpz-form-data'>
+				<!-- 根据标准化组件的内容动态生成表单内容 -->
+			</fieldset>
+		</form>
+	</div>
+	<!-- 标准化组件配置对话框 -->
+
 	<!-- /#wrapper -->
 
 	<!-- jQuery -->
@@ -115,6 +125,12 @@
 
 	<script type="text/javascript">
 		var t = $("#treeview1");
+		// 标准化组件流水号
+		var bzhzjlsh = '';
+		// 入参数据类型标志
+		var bzhzjSr = [];
+		// 入参数据拓展类型标志
+		var bzhzjSrTz = [];
 		var setting = {
 			async : {
 				enable : true,
@@ -149,16 +165,92 @@
 	
 		function zTreeDbClick(treeId, parentNode, childNodes) {
 			if (typeof (childNodes.ybzd) == 'undefined' || childNodes.ybzd == null) {
-				return false;
+				if (childNodes.sjybm === '888') {
+					// 获取标准化组件流水号
+					bzhzjlsh = childNodes.zdbm;
+					$('.validateTips').text('描述：' + childNodes.zdmc);
+					$.ajax({
+						url : 'getBzhzjpzSrList',
+						type : 'POST', //GET
+						async : true, //或false,是否异步
+						data : {
+							lsh : childNodes.zdbm,
+						},
+						dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
+						success : function(data, textStatus, jqXHR) {
+							let result = data.result;
+							let tempHTML = '<label for="gxhmc">数据集名称:</label> <input type="text" name="gxhmc" id="gxhmc" class="text ui-widget-content ui-corner-all" required>';
+							// 先清空各种标志位
+							bzhzjSr = [];
+							bzhzjSr[0] = 'N';
+							bzhzjSrTz = [];
+							bzhzjSrTz[0] = 'N';
+							$.each(result, function(index, value) {
+								bzhzjSr[index + 1] = value.sjlx;
+								if (value.xlzdbm != '') {
+									bzhzjSrTz[index + 1] = 'Y';
+								} else {
+									bzhzjSrTz[index + 1] = 'N';
+								}
+								// 如果下拉字段编码不为空，则需要处理为下拉菜单
+								if (value.xlzdbm != '') {
+									$.ajax({
+										url : 'getColumnDropDownList',
+										type : 'POST', //GET
+										contentType : 'application/x-www-form-urlencoded',
+										async : false, //或false,是否异步
+										data : {
+											xlzdbm : value.xlzdbm,
+										},
+										dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
+										success : function(subData, textStatus, jqXHR) {
+											if (subData.result.length > 0) {
+												tempHTML += '<label for="' + value.zdmc + '">' + value.zdmc + '</lable>';
+												let selectOption = '<select class="form-control" id="' + value.zdmc + '" name="' + value.zdmc + '" sjlx="' + value.sjlx + '">';
+												let optionString = '';
+												// 下拉菜单拓展标志位
+												let tzFlag = 'N';
+												let newOptionValue = '';
+												for (let i = 0; i < subData.result.length; i++) {
+													tzFlag = subData.result[i].tzbz;
+													newOptionValue = subData.result[i].ybzd;
+													optionString += '<option value="' + subData.result[i].sjz + '" tzbz="' + subData.result[i].tzbz + '" ybmc="' + subData.result[i].ybmc + '">' + subData.result[i].xsz + '</option>';
+												}
+												selectOption += optionString + '</select>';
+												tempHTML += selectOption;
+											} else {
+												console.log('you should have some dropdown list,but you have nothing in fact.');
+											}
+										}
+									});
+								} else {
+									tempHTML += '<label for="' + value.zdmc + '">' + value.zdmc + '</label> <input type="text" name="' + value.zdmc + '" id="' + value.zdmc + '" sjlx="' + value.sjlx + '" class="text ui-widget-content ui-corner-all" required>';
+								}
+							});
+							$('.bzhzjpz-form').html(tempHTML);
+						},
+						error : function(xhr, textStatus) {
+							console.log('错误');
+							console.log(xhr);
+							console.log(textStatus);
+						},
+						complete : function() {
+							//console.log('Ajax处理结束');
+						}
+					});
+					$('#dialog-form').dialog('open');
+				} else {
+					return false;
+				}
 			} else {
 				let data = childNodes;
 				// 已经添加过的元素不允许重复加入
 				if (selectArray.indexOf(data.ybzd) == -1) {
 					selectArray.push(data.ybzd);
 					let zdmc = "";
-					if(data.zjbz=='Y'){
-						zdmc = data.zdmc+'[🔑]';
-					}else{
+					if (data.zjbz == 'Y') {
+						zdmc = data.zdmc + '[Pk]';
+					} else {
 						zdmc = data.zdmc;
 					}
 					let newNode = '<li jhbz="' + data.jhbz + '" zjbz="' + data.zjbz + '" xlzdbm="' + data.xlzdbm + '" zdmc="' + data.zdmc + '" zdbm="' + data.zdbm + '" ybzd=\'' + data.ybzd + '\' ybmc="' + data.ybmc + '" sjlx="' + data.sjlx + '" ondblclick="deleteSelectNode(this)" class="btn  my-btn btn-sm" style="margin:2px;">' + zdmc + '</li>';
@@ -275,10 +367,126 @@
 		}
 	
 		$(document).ready(function() {
-		 	$( "#tabs1" ).tabs();
-		 	$( "#tabs2" ).tabs();
-		 	$( "#tabs3" ).tabs();
-		 	$( "#tabs4" ).tabs();
+			$('#tabs1').tabs();
+			$('#tabs2').tabs();
+			$('#tabs3').tabs();
+			$('#tabs4').tabs();
+			$('#dialog-form').dialog({
+				autoOpen : false,
+				modal : true,
+				buttons : {
+					"提交" : function() {
+						let x = $(".bzhzjpz-form").serializeArray();
+						// 标准化组件入参
+						let params = [];
+						// 参数第一位统一放标准化组件流水号
+						params.push(bzhzjlsh);
+						$.each(x, function(index, value) {
+							// 如果是字符和时间需要为参数加上引号
+							if (bzhzjSr[index] === 'C' || bzhzjSr[index] === 'T') {
+								// 如果是拓展参数则需要特殊处理
+								if (bzhzjSrTz[index] === 'N') {
+									params.push('\'' + value.value + '\'');
+								} else {
+									let tempString = value.value.split(',');
+									let arrayLength = tempString.length;
+									let swapString = ''
+									for (let i = 0; i < arrayLength; i++) {
+										swapString += '\'' + tempString[i] + '\',';
+									}
+									swapString = swapString.substring(0, swapString.length - 1);
+									params.push(swapString);
+								}
+							} else {
+								params.push(value.value);
+							}
+						});
+						console.log(params);
+						// 展示加载层
+						layer.load();
+						beginTime = new Date();
+						$.ajax({
+							url : 'getBzhzjpzGrenerate',
+							type : 'POST', //GET
+							contentType : 'application/json',
+							async : true, //或false,是否异步
+							data : JSON.stringify(params),
+							dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
+							success : function(result, textStatus, jqXHR) {
+								console.log(result);
+								let tableName = result.tableName;
+								var columns = result.columns;
+								columsArray = [];
+								// 给表头字段添加辅助属性
+								for (var i = 0; i < columns.length; i++) {
+									var obj = new Object();
+									obj = columns[i];
+									obj.sortable = true;
+									obj.align = 'center';
+									columsArray.push(obj);
+								}
+								// 初始化数据表格
+								$dataTable.bootstrapTable('destroy');
+								$dataTable.bootstrapTable({
+									url : "getTableDataByTableName",
+									dataType : "json",
+									singleSelect : false,
+									datalocale : "zh-US", //表格汉化
+									search : false, //显示搜索框
+									sidePagination : "server", //服务端处理分页
+									//height : tableHeight(), //高度调整
+									pagination : true, //是否分页
+									pageSize : 20, //单页记录数
+									pageList : [ 5, 10, 20, 50 ], //分页步进值
+									sidePagination : "server", //服务端分页
+									contentType : "application/x-www-form-urlencoded", //请求数据内容格式 默认是 application/json 自己根据格式自行服务端处理
+									method : "post", //请求方式
+									//searchAlign : "right", //查询框对齐方式
+									queryParamsType : "limit", //查询参数组织方式
+									queryParams : function getParams(params) {
+										params.tableName = tableName;
+										return params;
+									},
+									//searchOnEnterKey : true, //回车搜索
+									//showRefresh : true, //刷新按钮
+									//showColumns : true, //列选择按钮
+									//buttonsAlign : "right", //按钮对齐方式
+									toolbar : "#toolbar", //指定工具栏
+									toolbarAlign : "right", //工具栏对齐方式
+									columns : columsArray,
+									onLoadSuccess : function(data) {
+										// 关闭加载层
+										layer.closeAll('loading');
+										// 恢复统计按钮状态
+										//$("#searchButton").attr("disabled", false);
+										endTime = new Date();
+										let totalTime = Math.round((endTime.getTime() - beginTime.getTime()) / 1000);
+										layer.alert("本次统计总共耗时： " + totalTime + " 秒", function() {
+											// 关闭对话框
+											$('#dialog-form').dialog('close');
+											return;
+										});
+									},
+									onPageChange : function(data) {
+										// 翻页的时候重新计算开始时间
+										beginTime = new Date();
+									},
+									onLoadError : function() {
+										// 关闭加载层
+										layer.closeAll('loading');
+									// 恢复统计按钮状态
+									// $("#searchButton").attr("disabled", false);
+									}
+								});
+							}
+						});
+					},
+					"取消" : function() {
+						// 关闭对话框
+						$('#dialog-form').dialog('close');
+					}
+				}
+			});
 			$.ajax({
 				url : 'getSjyByExampleZTree',
 				type : 'POST', //GET
@@ -288,14 +496,12 @@
 				},
 				dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
 				success : function(data, textStatus, jqXHR) {
-					//console.log(data);
-					//console.log(JSON.parse(data));
 					t = $.fn.zTree.init(t, setting, JSON.parse(data));
 				},
 				error : function(xhr, textStatus) {
-					console.log('错误')
-					console.log(xhr)
-					console.log(textStatus)
+					console.log('错误');
+					console.log(xhr);
+					console.log(textStatus);
 				},
 				complete : function() {
 					//console.log('Ajax处理结束');
@@ -659,5 +865,4 @@
 		}
 	</script>
 </body>
-
 </html>

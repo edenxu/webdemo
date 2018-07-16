@@ -22,7 +22,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 import cn.com.gxbolian.databank.entity.BootstrapTreeViewEntity;
 import cn.com.gxbolian.databank.entity.ParamsObject;
+import cn.com.gxbolian.databank.entity.XtpzBzhzjpzSr;
 import cn.com.gxbolian.databank.entity.XtpzXlcs;
+import cn.com.gxbolian.databank.service.IBzhzjpzService;
 import cn.com.gxbolian.databank.service.IDemoService;
 import cn.com.gxbolian.databank.util.CommonUtil;
 import cn.com.gxbolian.databank.util.CompressUtil;
@@ -36,6 +38,8 @@ public class DemoWebController {
 
 	@Autowired
 	private IDemoService demoService;
+	@Autowired
+	private IBzhzjpzService bzhzjpzService;
 
 	/**
 	 * 内部页面重定向
@@ -201,6 +205,33 @@ public class DemoWebController {
 		HashMap<String, HashMap<String, Integer>> relation = demoService.getAllConnectedGraphBySjzd();
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("rela", relation);
+		return map;
+	}
+
+	@RequestMapping(value = "getBzhzjpzSrList", produces = "application/json;charset=utf-8", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	@ResponseBody
+	public Map<String, Object> getBzhzjpzSrList(HttpServletRequest request, HttpServletResponse response) {
+		String lsh = request.getParameter("lsh") == null ? "" : request.getParameter("lsh");
+		Map<String, Object> map = new HashMap<String, Object>();
+		List<XtpzBzhzjpzSr> list = bzhzjpzService.getBzhzjpzSrQd(lsh);
+		map.put("result", list);
+		return map;
+	}
+
+	@RequestMapping(value = "getBzhzjpzGrenerate", produces = "application/json;charset=utf-8", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	@ResponseBody
+	public Map<String, Object> getBzhzjpzGrenerate(HttpServletRequest request, HttpServletResponse response,
+			@RequestBody List<String> params) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		String tableName = bzhzjpzService.generateDataInSpecialPlugin(params, "admin");
+		// 获取新数据集的元数据信息
+		List<Map<String, Object>> resultMeta = demoService.getTableColumnNameAndDescription(tableName, "admin");
+		// map = demoService.getDataForBootstrapDataTable(tableName, "", "", "",
+		// "asc", "99999999999", "0", "admin");
+		map.put("tableName", tableName);
+		map.put("columns", resultMeta);
 		return map;
 	}
 
