@@ -205,20 +205,22 @@ public class CommonUtil {
 					cellValue = entry == null ? "" : entry.toString();
 					cellType = entry == null ? "" : entry.getClass().getName();
 					if ("java.lang.String".equals(cellType)) {
-						cell = row.createCell(cellNum, CellType.STRING);
-						cell.setCellValue(cellValue);
-					} else if ("java.math.BigDecimal".equals(cellType)) {
-						cell = row.createCell(cellNum, CellType.NUMERIC);
-						cell.setCellValue(cellValue);
+						cell = row.createCell(cellNum);
+						cell.setCellValue(String.valueOf(cellValue));
+					} else if ("java.math.BigDecimal".equals(cellType) || "java.lang.Long".equals(cellType)) {
+						cell = row.createCell(cellNum);
+						cell.setCellValue(Double.parseDouble(cellValue));
 					} else {
-						cell = row.createCell(cellNum, CellType.STRING);
-						cell.setCellValue(cellValue);
+						cell = row.createCell(cellNum);
+						cell.setCellValue(String.valueOf(cellValue));
 					}
 					cellNum++;
+					cell = null;
 				}
 			}
 			rowNum++;
 			cellNum = 0;
+			row = null;
 		}
 		FileOutputStream outputStream = null;
 		String fileName = UUID.randomUUID().toString().replace("-", "").toLowerCase() + ".xlsx";
@@ -391,14 +393,14 @@ public class CommonUtil {
 					cellValue = entry == null ? "" : entry.toString();
 					cellType = entry == null ? "" : entry.getClass().getName();
 					if ("java.lang.String".equals(cellType)) {
-						cell = row.createCell(cellNum, CellType.STRING);
-						cell.setCellValue(cellValue);
-					} else if ("java.math.BigDecimal".equals(cellType)) {
-						cell = row.createCell(cellNum, CellType.NUMERIC);
-						cell.setCellValue(cellValue);
+						cell = row.createCell(cellNum);
+						cell.setCellValue(String.valueOf(cellValue));
+					} else if ("java.math.BigDecimal".equals(cellType) || "java.lang.Long".equals(cellType)) {
+						cell = row.createCell(cellNum);
+						cell.setCellValue(Double.parseDouble(cellValue));
 					} else {
-						cell = row.createCell(cellNum, CellType.STRING);
-						cell.setCellValue(cellValue);
+						cell = row.createCell(cellNum);
+						cell.setCellValue(String.valueOf(cellValue));
 					}
 					cellNum++;
 					cell = null;

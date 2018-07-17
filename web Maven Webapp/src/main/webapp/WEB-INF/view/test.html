@@ -464,7 +464,6 @@
 										layer.alert("本次统计总共耗时： " + totalTime + " 秒", function() {
 											// 关闭对话框
 											$('#dialog-form').dialog('close');
-											return;
 										});
 									},
 									onPageChange : function(data) {
@@ -858,8 +857,10 @@
 				//timeout : 5000, //超时时间
 				dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
 				success : function(data, textStatus, jqXHR) {
-					//layer.alert('文件已生成，文件名为:' + data.fileName);
-					window.location = "ftp://172.16.12.167/" + data.fileName;
+					let hostname = document.domain;
+					console.log(hostname);
+					let ftpUrl = "ftp://" + hostname + "/";
+					window.location = ftpUrl + data.fileName;
 				}
 			});
 		}
