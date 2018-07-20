@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -30,7 +31,11 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 	protected final Logger log = LogManager.getLogger(GreenplumCommonDAOImpl.class);
 
 	@Autowired
+	@Qualifier("jdbcTemplate")
 	private JdbcTemplate jdbcTemplate;
+	@Autowired
+	@Qualifier("jdbcTemplatePostgresql")
+	private JdbcTemplate jdbcTemplatePostgresql;
 	@Autowired
 	private XtpzSjzdMapper sjzdDao;
 	@Autowired
@@ -588,7 +593,6 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 		return result;
 	}
 
-	@SuppressWarnings({ "unchecked" })
 	@Override
 	public List<XtpzSjy> getXtpzSjyInUnionMode(String queryValue, String operator, String mode) {
 		String sql = "";
@@ -596,17 +600,15 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 		param[0] = operator;
 		param[1] = queryValue;
 		if ("1".equals(mode)) {
-			sql = "with temp as(select sjybm,sjymc,flbm from yxscdb.XTPZ_sjy union select sjybm,sjymc,flbm from yxscdb.XTPZ_sjy_gxh where czybm=? and sjymc!='') select * from temp where sjybm=? order by 1;";
+			sql = "with temp as(select sjybm,sjymc,flbm from XTPZ_sjy union select sjybm,sjymc,flbm from XTPZ_sjy_gxh where czybm=? and sjymc!='') select * from temp where sjybm=? order by 1";
 		} else if ("2".equals(mode)) {
-			sql = "with temp as(select sjybm,sjymc,flbm from yxscdb.XTPZ_sjy union select sjybm,sjymc,flbm from yxscdb.XTPZ_sjy_gxh where czybm=? and sjymc!='') select * from temp where flbm=? order by 1;";
+			sql = "with temp as(select sjybm,sjymc,flbm from XTPZ_sjy union select sjybm,sjymc,flbm from XTPZ_sjy_gxh where czybm=? and sjymc!='') select * from temp where flbm=? order by 1";
 		}
-		// log.info("sql:" + sql);
-		@SuppressWarnings("rawtypes")
-		List<XtpzSjy> list = jdbcTemplate.query(sql, param, new BeanPropertyRowMapper(XtpzSjy.class));
+		//log.info("sql:" + sql);
+		List<XtpzSjy> list = jdbcTemplatePostgresql.query(sql, param, new BeanPropertyRowMapper<XtpzSjy>(XtpzSjy.class));
 		return list;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<XtpzSjzd> getXtpzSjzdInUnionMode(String queryValue, String operator, String mode) {
 		String sql = "";
@@ -614,34 +616,29 @@ public class GreenplumCommonDAOImpl implements IGreenplumCommonDAO {
 		param[0] = operator;
 		param[1] = queryValue;
 		if ("1".equals(mode)) {
-			sql = "with temp as(select zdbm,sjybm,zdmc,ybmc,ybzd,sjlx,jhbz,xlzdbm,zjbz from yxscdb.XTPZ_sjzd "
-					+ "union "
-					+ "select zdbm,sjybm,zdmc,ybmc,ybzd,sjlx,jhbz,xlzdbm,zjbz from yxscdb.XTPZ_sjzd_gxh where czybm=?) "
-					+ "select * from temp where sjybm=? order by 1;";
+			sql = "with temp as(select zdbm,sjybm,zdmc,ybmc,ybzd,sjlx,jhbz,xlzdbm,zjbz from XTPZ_sjzd " + " union "
+					+ "select zdbm,sjybm,zdmc,ybmc,ybzd,sjlx,jhbz,xlzdbm,zjbz from XTPZ_sjzd_gxh where czybm=?) "
+					+ "select * from temp where sjybm=? order by 1";
 		} else if ("2".equals(mode)) {
-			sql = "with temp as(select zdbm,sjybm,zdmc,ybmc,ybzd,sjlx,jhbz,xlzdbm,zjbz from yxscdb.XTPZ_sjzd "
-					+ "union "
-					+ "select zdbm,sjybm,zdmc,ybmc,ybzd,sjlx,jhbz,xlzdbm,zjbz from yxscdb.XTPZ_sjzd_gxh where czybm=?) "
-					+ "select * from temp where ybzd=? order by 1;";
+			sql = "with temp as(select zdbm,sjybm,zdmc,ybmc,ybzd,sjlx,jhbz,xlzdbm,zjbz from XTPZ_sjzd " + " union "
+					+ "select zdbm,sjybm,zdmc,ybmc,ybzd,sjlx,jhbz,xlzdbm,zjbz from XTPZ_sjzd_gxh where czybm=?) "
+					+ "select * from temp where ybzd=? order by 1";
 		}
-		// log.info("sql:" + sql);
-		@SuppressWarnings("rawtypes")
-		List<XtpzSjzd> list = jdbcTemplate.query(sql, param, new BeanPropertyRowMapper(XtpzSjzd.class));
+		//log.info("sql:" + sql);
+		List<XtpzSjzd> list = jdbcTemplatePostgresql.query(sql, param, new BeanPropertyRowMapper<XtpzSjzd>(XtpzSjzd.class));
 		return list;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<XtpzSjglys> getXtpzSjglysInUnionMode(String operator) {
 		String sql = "";
 		String[] param = new String[1];
 		param[0] = operator;
-		sql = "with temp as(select lsh,ybmca,ybzda,ybmcb,ybzdb from yxscdb.XTPZ_sjglys " + " union "
-				+ "select lsh,ybmca,ybzda,ybmcb,ybzdb from yxscdb.XTPZ_sjglys_gxh where czybm=?) "
+		sql = "with temp as(select lsh,ybmca,ybzda,ybmcb,ybzdb from XTPZ_sjglys " + " union "
+				+ "select lsh,ybmca,ybzda,ybmcb,ybzdb from XTPZ_sjglys_gxh where czybm=?) "
 				+ " select * from temp order by ybmca ";
-		// log.info("sql:" + sql);
-		@SuppressWarnings("rawtypes")
-		List<XtpzSjglys> list = jdbcTemplate.query(sql, param, new BeanPropertyRowMapper(XtpzSjglys.class));
+		//log.info("sql:" + sql);
+		List<XtpzSjglys> list = jdbcTemplatePostgresql.query(sql, param, new BeanPropertyRowMapper<XtpzSjglys>(XtpzSjglys.class));
 		return list;
 	}
 

@@ -567,10 +567,10 @@ public class DemoServiceImpl implements IDemoService {
 	}
 
 	@Override
-	// @Cacheable("getXtpzXlcsListByExample")
-	public List<XtpzXlcs> getXtpzXlcsListByExample(XtpzXlcs xlcs) {
+	@Cacheable("getXtpzXlcsListByZdbm")
+	public List<XtpzXlcs> getXtpzXlcsListByZdbm(String zdbm) {
 		XtpzXlcsExample example = new XtpzXlcsExample();
-		example.createCriteria().andZdbmEqualTo(xlcs.getZdbm());
+		example.createCriteria().andZdbmEqualTo(zdbm);
 		example.setOrderByClause(" lsh asc ");
 		List<XtpzXlcs> list = xlcsDao.selectByExample(example);
 		int listSize = list.size();

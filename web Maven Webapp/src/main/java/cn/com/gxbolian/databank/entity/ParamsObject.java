@@ -1,9 +1,14 @@
 package cn.com.gxbolian.databank.entity;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class ParamsObject {
+public class ParamsObject  implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private List<XtpzSjzd> selectTables;
 	private String whereClause;
 	private String groupClause;

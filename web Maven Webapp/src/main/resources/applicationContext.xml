@@ -20,7 +20,7 @@
 			</list>
 		</property>
 	</bean>
-	<!-- 配置数据源 -->
+	<!-- 配置数据源[GreenPlum] -->
 	<bean name="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
 		init-method="init" destroy-method="close">
 		<!-- 数据库连接基础信息 -->
@@ -32,34 +32,71 @@
 		<!-- <property name="poolPreparedStatements" value="true" /> <property 
 			name="maxPoolPreparedStatementPerConnectionSize" value="33" /> -->
 		<!-- 最大并发连接数 -->
-		<property name="maxActive" value="${maxActive}" />
+		<property name="maxActive" value="${greenplum.jdbc.maxActive}" />
 		<!-- 初始化连接数量 -->
-		<property name="initialSize" value="${initialSize}" />
+		<property name="initialSize" value="${greenplum.jdbc.initialSize}" />
 		<!-- 配置获取连接等待超时的时间 -->
-		<property name="maxWait" value="${maxWait}" />
+		<property name="maxWait" value="${greenplum.jdbc.maxWait}" />
 		<!-- 最小空闲连接数 -->
-		<property name="minIdle" value="${minIdle}" />
+		<property name="minIdle" value="${greenplum.jdbc.minIdle}" />
 		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
-		<property name="timeBetweenEvictionRunsMillis" value="${timeBetweenEvictionRunsMillis}" />
+		<property name="timeBetweenEvictionRunsMillis" value="${greenplum.jdbc.timeBetweenEvictionRunsMillis}" />
 		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
-		<property name="minEvictableIdleTimeMillis" value="${minEvictableIdleTimeMillis}" />
+		<property name="minEvictableIdleTimeMillis" value="${greenplum.jdbc.minEvictableIdleTimeMillis}" />
 		<!-- 验证数据库连接有效性，要求查询语句 -->
-		<property name="validationQuery" value="${validationQuery}" />
-		<property name="testWhileIdle" value="${testWhileIdle}" />
-		<property name="testOnBorrow" value="${testOnBorrow}" />
-		<property name="testOnReturn" value="${testOnReturn}" />
-		<property name="maxOpenPreparedStatements" value="${maxOpenPreparedStatements}" />
+		<property name="validationQuery" value="${greenplum.jdbc.validationQuery}" />
+		<property name="testWhileIdle" value="${greenplum.jdbc.testWhileIdle}" />
+		<property name="testOnBorrow" value="${greenplum.jdbc.testOnBorrow}" />
+		<property name="testOnReturn" value="${greenplum.jdbc.testOnReturn}" />
+		<property name="maxOpenPreparedStatements" value="${greenplum.jdbc.maxOpenPreparedStatements}" />
 		<!-- 打开 removeAbandoned 功能 -->
-		<property name="removeAbandoned" value="${removeAbandoned}" />
+		<property name="removeAbandoned" value="${greenplum.jdbc.removeAbandoned}" />
 		<!-- 1800 秒，也就是 30 分钟 -->
-		<property name="removeAbandonedTimeout" value="${removeAbandonedTimeout}" />
+		<property name="removeAbandonedTimeout" value="${greenplum.jdbc.removeAbandonedTimeout}" />
 		<!-- 关闭 abanded 连接时输出错误日志 -->
-		<property name="logAbandoned" value="${logAbandoned}" />
+		<property name="logAbandoned" value="${greenplum.jdbc.logAbandoned}" />
+	</bean>
+	
+	<!-- 配置数据源[Postgresql] -->
+	<bean name="dataSourcePostgresql" class="com.alibaba.druid.pool.DruidDataSource"
+		init-method="init" destroy-method="close">
+		<!-- 数据库连接基础信息 -->
+		<property name="driverClassName" value="${postresql.jdbc.driverClassName}" />
+		<property name="url" value="${postresql.jdbc.url}" />
+		<property name="username" value="${postresql.jdbc.username}" />
+		<property name="password" value="${postresql.jdbc.password}" />
+		<!-- 是否缓存preparedStatement，也就是PSCache。PSCache对支持游标的数据库性能提升巨大，比如说oracle。在mysql下建议关闭。 -->
+		<!-- <property name="poolPreparedStatements" value="true" /> <property 
+			name="maxPoolPreparedStatementPerConnectionSize" value="33" /> -->
+		<!-- 最大并发连接数 -->
+		<property name="maxActive" value="${postresql.jdbc.maxActive}" />
+		<!-- 初始化连接数量 -->
+		<property name="initialSize" value="${postresql.jdbc.initialSize}" />
+		<!-- 配置获取连接等待超时的时间 -->
+		<property name="maxWait" value="${postresql.jdbc.maxWait}" />
+		<!-- 最小空闲连接数 -->
+		<property name="minIdle" value="${postresql.jdbc.minIdle}" />
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="${postresql.jdbc.timeBetweenEvictionRunsMillis}" />
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="${postresql.jdbc.minEvictableIdleTimeMillis}" />
+		<!-- 验证数据库连接有效性，要求查询语句 -->
+		<property name="validationQuery" value="${postresql.jdbc.validationQuery}" />
+		<property name="testWhileIdle" value="${postresql.jdbc.testWhileIdle}" />
+		<property name="testOnBorrow" value="${postresql.jdbc.testOnBorrow}" />
+		<property name="testOnReturn" value="${postresql.jdbc.testOnReturn}" />
+		<property name="maxOpenPreparedStatements" value="${postresql.jdbc.maxOpenPreparedStatements}" />
+		<!-- 打开 removeAbandoned 功能 -->
+		<property name="removeAbandoned" value="${postresql.jdbc.removeAbandoned}" />
+		<!-- 1800 秒，也就是 30 分钟 -->
+		<property name="removeAbandonedTimeout" value="${postresql.jdbc.removeAbandonedTimeout}" />
+		<!-- 关闭 abanded 连接时输出错误日志 -->
+		<property name="logAbandoned" value="${postresql.jdbc.logAbandoned}" />
 	</bean>
 
 	<!-- spring和MyBatis完美整合，不需要mybatis的配置映射文件 -->
 	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
-		<property name="dataSource" ref="dataSource" />
+		<property name="dataSource" ref="dataSourcePostgresql" />
 		<!-- 自动扫描mapping.xml文件 -->
 		<property name="mapperLocations" value="classpath:cn/com/gxbolian/databank/dao/*.xml"></property>
 		<!-- 配置mybatis的日志记录 -->
@@ -76,13 +113,24 @@
 	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
 		<property name="dataSource" ref="dataSource"></property>
 	</bean>
-	<!-- 配置Spring 事务管理 -->
+	<bean id="jdbcTemplatePostgresql" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="dataSourcePostgresql"></property>
+	</bean>
+	
+	<!-- 配置Spring 事务管理[GreenPlum] -->
 	<bean id="transactionManager"
 		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 		<property name="dataSource" ref="dataSource"></property>
 	</bean>
+	
+	<!-- 配置Spring 事务管理[Postgresql] -->
+	<bean id="transactionManagerPostgresql"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSourcePostgresql"></property>
+	</bean>
 	<!-- 启用事务注解方式处理 -->
 	<tx:annotation-driven transaction-manager="transactionManager" />
+	<tx:annotation-driven transaction-manager="transactionManagerPostgresql" />
 
 	<!-- 启动包扫描功能，以便注册带有@Controller、@Service、@repository、@Component等注解的类成为spring的bean -->
 	<context:component-scan base-package="cn.com.gxbolian.databank.*" />

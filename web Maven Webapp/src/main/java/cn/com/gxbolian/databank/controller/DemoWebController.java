@@ -138,9 +138,7 @@ public class DemoWebController {
 	@ResponseBody
 	public Map<String, Object> getColumnDropDownList(HttpServletRequest request, HttpServletResponse response) {
 		String xlzdbm = request.getParameter("xlzdbm") == null ? "" : request.getParameter("xlzdbm");
-		XtpzXlcs xlcs = new XtpzXlcs();
-		xlcs.setZdbm(xlzdbm);
-		List<XtpzXlcs> list = demoService.getXtpzXlcsListByExample(xlcs);
+		List<XtpzXlcs> list = demoService.getXtpzXlcsListByZdbm(xlzdbm);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("result", list);
 		return map;

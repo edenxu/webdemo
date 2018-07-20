@@ -145,12 +145,13 @@ public interface IDemoService {
 	public HashMap<String, HashMap<String, Integer>> getAllConnectedGraphBySjzd(String operator);
 
 	/**
-	 * 获取下拉菜单主表数据信息
+	 * 根据字段编码获取下拉菜单主表数据信息
 	 * 
-	 * @param xlcs
+	 * @param zdbm
+	 *            字段编码
 	 * @return
 	 */
-	public List<XtpzXlcs> getXtpzXlcsListByExample(XtpzXlcs xlcs);
+	public List<XtpzXlcs> getXtpzXlcsListByZdbm(String zdbm);
 
 	/**
 	 * 获取下拉菜单拓展表数据信息
