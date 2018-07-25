@@ -12,8 +12,8 @@ import cn.com.gxbolian.databank.entity.XtpzCxfa;
 import cn.com.gxbolian.databank.util.IdWorker;
 
 @Service
-public class XtpzCxfanSerieImpl implements IQueryPlanService {
-	protected final Logger log = LogManager.getLogger(XtpzCxfanSerieImpl.class);
+public class QueryPlanServiceImpl implements IQueryPlanService {
+	protected final Logger log = LogManager.getLogger(QueryPlanServiceImpl.class);
 	@Autowired
 	private XtpzCxfaMapper queryPlanDao;
 
