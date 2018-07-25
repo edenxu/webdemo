@@ -8,9 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cn.com.gxbolian.databank.dao.XtpzCxfaMapper;
-import cn.com.gxbolian.databank.dao.XtpzSjyGxhMapper;
 import cn.com.gxbolian.databank.entity.XtpzCxfa;
-import cn.com.gxbolian.databank.entity.XtpzSjyGxh;
 import cn.com.gxbolian.databank.util.IdWorker;
 
 @Service
