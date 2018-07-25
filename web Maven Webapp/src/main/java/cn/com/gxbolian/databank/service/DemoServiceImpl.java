@@ -25,6 +25,7 @@ import com.google.gson.Gson;
 
 import cn.com.gxbolian.databank.dao.IGreenplumCommonDAO;
 import cn.com.gxbolian.databank.dao.XtpzBzhzjpzMapper;
+import cn.com.gxbolian.databank.dao.XtpzCxfaMapper;
 import cn.com.gxbolian.databank.dao.XtpzSjglysGxhMapper;
 import cn.com.gxbolian.databank.dao.XtpzSjglysMapper;
 import cn.com.gxbolian.databank.dao.XtpzSjyGxhMapper;
@@ -38,6 +39,8 @@ import cn.com.gxbolian.databank.entity.BootstrapTreeViewEntity;
 import cn.com.gxbolian.databank.entity.ParamsObject;
 import cn.com.gxbolian.databank.entity.XtpzBzhzjpz;
 import cn.com.gxbolian.databank.entity.XtpzBzhzjpzExample;
+import cn.com.gxbolian.databank.entity.XtpzCxfa;
+import cn.com.gxbolian.databank.entity.XtpzCxfaExample;
 import cn.com.gxbolian.databank.entity.XtpzSjglys;
 import cn.com.gxbolian.databank.entity.XtpzSjglysExample;
 import cn.com.gxbolian.databank.entity.XtpzSjglysGxh;
@@ -81,6 +84,8 @@ public class DemoServiceImpl implements IDemoService {
 	private XtpzSjglysGxhMapper sjglGxhDao;
 	@Autowired
 	private XtpzBzhzjpzMapper bzhzjpzDao;
+	@Autowired
+	private XtpzCxfaMapper cxfaDao;
 	@Autowired
 	private IGreenplumCommonDAO greenplumCommonDAOImpl;
 
@@ -196,15 +201,29 @@ public class DemoServiceImpl implements IDemoService {
 			}
 			// 补充标准化组件的部分
 			if ("888".equals(nodeId)) {
-				XtpzBzhzjpzExample sjzdBzhzjpzxample = new XtpzBzhzjpzExample();
-				sjzdBzhzjpzxample.createCriteria().andSjybmEqualTo(nodeId);
-				sjzdBzhzjpzxample.setOrderByClause(" lsh asc");
-				List<XtpzBzhzjpz> bzhzjpzList = bzhzjpzDao.selectByExample(sjzdBzhzjpzxample);
+				XtpzBzhzjpzExample sjzdBzhzjpzExample = new XtpzBzhzjpzExample();
+				sjzdBzhzjpzExample.createCriteria().andSjybmEqualTo(nodeId);
+				sjzdBzhzjpzExample.setOrderByClause(" lsh asc");
+				List<XtpzBzhzjpz> bzhzjpzList = bzhzjpzDao.selectByExample(sjzdBzhzjpzExample);
 				for (XtpzBzhzjpz bzhzjpz : bzhzjpzList) {
 					XtpzSjzd swap = new XtpzSjzd();
 					swap.setZdbm(bzhzjpz.getLsh());
 					swap.setSjybm(bzhzjpz.getSjybm());
 					swap.setZdmc(bzhzjpz.getMc());
+					sjzdList.add(swap);
+				}
+			}
+			// 补充查询方案的部分
+			if ("9999".equals(nodeId)) {
+				XtpzCxfaExample cxfaExample = new XtpzCxfaExample();
+				cxfaExample.createCriteria().andSjybmEqualTo(nodeId);
+				cxfaExample.setOrderByClause(" lsh asc");
+				List<XtpzCxfa> cxfaList = cxfaDao.selectByExample(cxfaExample);
+				for (XtpzCxfa cxfa : cxfaList) {
+					XtpzSjzd swap = new XtpzSjzd();
+					swap.setZdbm(cxfa.getLsh());
+					swap.setSjybm(cxfa.getSjybm());
+					swap.setZdmc(cxfa.getMc());
 					sjzdList.add(swap);
 				}
 			}

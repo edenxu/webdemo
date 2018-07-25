@@ -23,9 +23,11 @@ import org.springframework.web.servlet.ModelAndView;
 import cn.com.gxbolian.databank.entity.BootstrapTreeViewEntity;
 import cn.com.gxbolian.databank.entity.ParamsObject;
 import cn.com.gxbolian.databank.entity.XtpzBzhzjpzSr;
+import cn.com.gxbolian.databank.entity.XtpzCxfa;
 import cn.com.gxbolian.databank.entity.XtpzXlcs;
 import cn.com.gxbolian.databank.service.IBzhzjpzService;
 import cn.com.gxbolian.databank.service.IDemoService;
+import cn.com.gxbolian.databank.service.IQueryPlanService;
 import cn.com.gxbolian.databank.util.CommonUtil;
 import cn.com.gxbolian.databank.util.CompressUtil;
 import cn.com.gxbolian.databank.util.IdWorker;
@@ -40,6 +42,8 @@ public class DemoWebController {
 	private IDemoService demoService;
 	@Autowired
 	private IBzhzjpzService bzhzjpzService;
+	@Autowired
+	private IQueryPlanService queryPlanService;
 
 	/**
 	 * 内部页面重定向
@@ -230,6 +234,29 @@ public class DemoWebController {
 		// "asc", "99999999999", "0", "admin");
 		map.put("tableName", tableName);
 		map.put("columns", resultMeta);
+		return map;
+	}
+
+	@RequestMapping(value = "insertQueryPlan", produces = "application/json;charset=utf-8", method = {
+			RequestMethod.POST })
+	@ResponseBody
+	public Map<String, Object> insertQueryPlan(HttpServletRequest request, HttpServletResponse response,
+			@RequestBody XtpzCxfa queryPlan) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		queryPlan.setCzybm("admin");
+		queryPlanService.insertNewQeuryPlan(queryPlan, "");
+		map.put("result", "ok");
+		return map;
+	}
+
+	@RequestMapping(value = "getQueryPlanByLsh", produces = "application/json;charset=utf-8", method = {
+			RequestMethod.POST })
+	@ResponseBody
+	public Map<String, Object> getQueryPlanByLsh(HttpServletRequest request, HttpServletResponse response) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		String lsh = request.getParameter("lsh") == null ? "" : request.getParameter("lsh");
+		XtpzCxfa cxfa = queryPlanService.getQueryPlanByPrimaryKey(lsh);
+		map.put("result", cxfa);
 		return map;
 	}
 

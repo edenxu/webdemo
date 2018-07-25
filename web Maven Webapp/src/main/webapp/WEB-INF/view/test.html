@@ -65,7 +65,13 @@
 								查 询 </span>
 						</button>
 						<input type="checkbox" name="saveToGxh" id="saveToGxh">结果再分析</input>
-						<input type="text" id="myTableName" placeholder="给当前结果集起个别名" /> <br>
+						<input type="text" id="myTableName" placeholder="给当前结果集起个别名" />
+						<button type="button" class="btn  btn-default btn-sm"
+							id="saveQueryPlanButton">
+							<span class="glyphicon glyphicon-search"
+								onClick="saveQueryPlan()"> 方案保存 </span>
+						</button>
+						<br>
 						<div class="whereArea" id="whereArea"></div>
 					</div>
 				</div>
@@ -239,6 +245,41 @@
 						}
 					});
 					$('#dialog-form').dialog('open');
+				} else if (childNodes.sjybm === '9999') {
+					// 查询方案处理
+					var myconfirm = layer.confirm('加载该方案将会覆盖当前的相关配置信息，是否确定加载？', {
+						btn : [ '是', '否' ] //按钮
+					}, function() {
+						//console.log(childNodes);
+						let lsh = childNodes.zdbm;
+						$.ajax({
+							url : 'getQueryPlanByLsh',
+							type : 'POST',
+							//contentType : 'application/x-www-form-urlencoded',
+							async : true, //或false,是否异步
+							data : {
+								lsh : lsh
+							},
+							//timeout : 5000, //超时时间
+							dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
+							success : function(data, textStatus, jqXHR) {
+								//console.log(data);
+								$('#sortablefield').children().remove();
+								$('#filterColumn').children().remove();
+								$('#whereArea').children().remove();
+								$('#sortablefield').html(data.result.cxzd);
+								$('#filterColumn').html(data.result.sxzd);
+								$('#whereArea').html(data.result.sxsz);
+								layer.close(myconfirm);
+							},
+							error : function() {
+								layer.close(myconfirm);
+							}
+						});
+					}, function() {
+						console.log('Bad');
+						layer.close(myconfirm);
+					});
 				} else {
 					return false;
 				}
@@ -607,6 +648,10 @@
 						columsArray.push(obj);
 					}
 					table = data.tableName;
+					console.log('--------data--------');
+					console.log(data);
+					console.log('--------paramsObject--------');
+					console.log(paramsObject);
 	
 					// 初始化数据表格
 					$dataTable.bootstrapTable('destroy');
@@ -861,6 +906,78 @@
 					let ftpUrl = "ftp://" + hostname + "/";
 					window.location = ftpUrl + data.fileName;
 				}
+			});
+		}
+	
+		//查询方案保存处理
+		function saveQueryPlan() {
+			var myconfirm = layer.confirm('将当前查询方案保存，可避免下次重新配置查询字段、筛选字段等信息，确定要保存吗？', {
+				btn : [ '是', '否' ] //按钮
+			}, function() {
+				// 标准化组件流水号
+				bzhzjlsh = '';
+				// 入参数据类型标志
+				bzhzjSr = [];
+				// 入参数据拓展类型标志
+				bzhzjSrTz = [];
+				let sortablefield = $('#sortablefield').html();
+				let filterColumn = $('#filterColumn').html();
+				// 如直接调用.html()方法无法获取到控件中已经填写的相关值，因此进行附加HTML信息中已经填写的值后再获取
+				$('#whereArea :input').each(function() {
+					///////////获取容器innerHTML要想包含输入的值，需要设置过value属性。其他对象重置selected、checked属性
+					switch (this.type) {
+					case 'text':
+						this.setAttribute('value', this.value);
+						break;
+					case 'checkbox':
+					case 'radio':
+						if (this.checked) this.setAttribute('checked', 'checked');
+						else this.removeAttribute('checked');
+						break;
+					case 'select-one':
+					case 'select-multiple':
+						$(this).find('option').each(function() {
+							if (this.selected) this.setAttribute('selected', 'selected');
+							else this.removeAttribute('selected');
+						});
+						break;
+					case 'textarea':
+						this.innerHTML = this.value;
+						break;
+					}
+				});
+				let whereArea = $('#whereArea').html();
+				//console.log(sortablefield);
+				//console.log(filterColumn);
+				//console.log(whereArea);
+				//console.log($('#whereArea').html());
+				let queryPlan = new Object();
+				queryPlan.mc = 'testdemo';
+				queryPlan.ms = 'testdemo';
+				queryPlan.cxzd = sortablefield;
+				queryPlan.sxzd = filterColumn;
+				queryPlan.sxsz = whereArea;
+				queryPlan.gjsx = '';
+				console.log(queryPlan);
+				$.ajax({
+					url : 'insertQueryPlan',
+					type : 'POST', //GET
+					contentType : 'application/json',
+					async : false, //或false,是否异步
+					data : JSON.stringify(queryPlan),
+					//timeout : 5000, //超时时间
+					dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
+					success : function(data, textStatus, jqXHR) {
+						console.log('save success.');
+						layer.close(myconfirm);
+					},
+					error : function() {
+						layer.close(myconfirm);
+					}
+				});
+			}, function() {
+				console.log('Bad');
+				layer.close(myconfirm);
 			});
 		}
 	</script>

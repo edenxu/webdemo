@@ -17,9 +17,9 @@
 		</commentGenerator>
 
 		<!-- jdbc连接 -->
-		<jdbcConnection driverClass="${greenplum.jdbc.driverClassName}"
-			connectionURL="${greenplum.jdbc.url}" userId="${greenplum.jdbc.username}"
-			password="${greenplum.jdbc.password}" />
+		<jdbcConnection driverClass="${postresql.jdbc.driverClassName}"
+			connectionURL="${postresql.jdbc.url}" userId="${postresql.jdbc.username}"
+			password="${postresql.jdbc.password}" />
 
 		<!-- 类型转换 -->
 		<javaTypeResolver>
@@ -60,6 +60,6 @@
 		<!-- 指定列的java数据类型 -->
 		<!-- <columnOverride column="LONG_VARCHAR_FIELD" jdbcType="VARCHAR" /> -->
 		<!-- </table> -->
-		<table tableName="XTPZ_BZHZJPZ_GL"></table>
+		<table tableName="XTPZ_CXFA"></table>
 	</context>
 </generatorConfiguration>  
