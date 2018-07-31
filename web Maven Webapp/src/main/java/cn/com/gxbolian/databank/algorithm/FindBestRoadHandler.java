@@ -51,7 +51,7 @@ public class FindBestRoadHandler {
 		for (int i = 0; i < arraySize - 1; i++) {
 			String a = array[i], b = array[i + 1];
 			List<String> temp = new ArrayList<String>();
-			Distance distance = new DistanceDijkstraImpl();
+			Distance distance = new DistanceImpl();
 			log.info("A:" + a + ",B:" + b);
 			log.info("stepLength:" + new Gson().toJson(stepLength));
 			// 找出两个节点之间的最短路径

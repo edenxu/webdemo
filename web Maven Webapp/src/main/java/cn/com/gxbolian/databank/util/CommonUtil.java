@@ -25,7 +25,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import cn.com.gxbolian.databank.algorithm.Distance;
-import cn.com.gxbolian.databank.algorithm.DistanceDijkstraImpl;
+import cn.com.gxbolian.databank.algorithm.DistanceImpl;
 import cn.com.gxbolian.databank.entity.XtpzSjzd;
 
 public class CommonUtil {
@@ -99,7 +99,7 @@ public class CommonUtil {
 	}
 
 	/**
-	 * 返回数组序列中，某一个数组前后两两最优路线的合并总线路
+	 * 返回数组序列中，相邻两个节点最优路线的合并总线路【穷举法】
 	 * 
 	 * @param array
 	 *            序列数组
@@ -112,7 +112,7 @@ public class CommonUtil {
 		for (int i = 0; i < arraySize - 1; i++) {
 			String a = array[i], b = array[i + 1];
 			List<String> temp = new ArrayList<String>();
-			Distance distance = new DistanceDijkstraImpl();
+			Distance distance = new DistanceImpl();	
 			// 找出两个节点之间的最短路径
 			temp = distance.getMinStep(a, b, stepLength).getStep();
 			if (temp != null) {

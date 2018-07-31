@@ -9,8 +9,8 @@ import java.util.Map.Entry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class DistanceDijkstraImpl implements Distance {
-	protected final Logger log = LogManager.getLogger(DistanceDijkstraImpl.class);
+public class DistanceImpl implements Distance {
+	protected final Logger log = LogManager.getLogger(DistanceImpl.class);
 
 	// key1节点编号，key2节点编号，value为key1到key2的步长
 	private HashMap<String, HashMap<String, Integer>> stepLength;

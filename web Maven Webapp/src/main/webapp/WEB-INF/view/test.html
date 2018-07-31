@@ -10,7 +10,7 @@
 <title>营销业务分析及数据转换平台</title>
 <!-- Bootstrap Core CSS -->
 <link rel="stylesheet" href="css/jquery-ui.min.css">
-<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="css/bootstrap-table.min.css">
 <link rel="stylesheet" href="css/myApp.css" />
 <link rel="stylesheet" href="css/zTreeStyle/metro.css" type="text/css">
@@ -89,12 +89,11 @@
 								</button>
 							</div>
 							<!-- /.panel-heading -->
-							<div class="panel-body" style="overflow:auto">
+							<div class="panel-body">
 								<table width="100%"
 									class="table table-striped table-bordered table-hover"
 									id="dataTable">
 								</table>
-								<!-- /.table -->
 							</div>
 						</div>
 					</div>
@@ -211,7 +210,7 @@
 										dataType : 'json', //返回的数据格式：json/xml/html/script/jsonp/text
 										success : function(subData, textStatus, jqXHR) {
 											if (subData.result.length > 0) {
-												tempHTML += '<label for="' + value.zdmc + '">' + value.zdmc + '</lable>';
+												tempHTML += '<label for="' + value.zdmc + '">' + value.zdmc + '</label>';
 												let selectOption = '<select class="form-control" id="' + value.zdmc + '" name="' + value.zdmc + '" sjlx="' + value.sjlx + '">';
 												let optionString = '';
 												// 下拉菜单拓展标志位
@@ -357,11 +356,11 @@
 		var selectArray = new Array();
 		// 过滤字段
 		var filterArray = new Array();
-		var optionString = '<select class="form-control"><option value=" > "> > </option><option value=" >= "> >= </option><option value=" = "> = </option>'
-			+ '<option value=" < "> < </option><option value=" <= "> <= </option><option value=" IN "> IN </option><option value=" NOT IN "> NOT IN </option><option value=" LIKE "> LIKE </option></select>';
+		var optionString = '<select class="form-control"><option value=" > "> 大于 </option><option value=" >= "> 大于等于 </option><option value=" = "> 等于 </option>'
+			+ '<option value=" < "> 小于 </option><option value=" <= "> 小于等于 </option><option value=" IN "> IN </option><option value=" NOT IN "> NOT IN </option><option value=" LIKE "> 包含 </option></select>';
 		var optionBefore = '<select class="form-control"><option value="">  </option><option value=" ( "> ( </option></select>';
 		var optionAfter = '<select class="form-control"><option value="">  </option><option value=" ) "> ) </option></select>';
-		var optionRela = '<select class="form-control"><option value="">  </option><option value=" AND "> AND </option><option value=" OR "> OR </option></select>';
+		var optionRela = '<select class="form-control"><option value="">  </option><option value=" AND "> 并且 </option><option value=" OR "> 或 </option></select>';
 		var deleteButton = '<button type="button" class="btn btn-warning" onClick="deleteCurrentRow(this)"><span class="glyphicon glyphicon-remove"> 删 除 </span></button>';
 	
 		var whereConditionSQL = '';
@@ -648,10 +647,10 @@
 						columsArray.push(obj);
 					}
 					table = data.tableName;
-					console.log('--------data--------');
-					console.log(data);
-					console.log('--------paramsObject--------');
-					console.log(paramsObject);
+					//console.log('--------data--------');
+					//console.log(data);
+					//console.log('--------paramsObject--------');
+					//console.log(paramsObject);
 	
 					// 初始化数据表格
 					$dataTable.bootstrapTable('destroy');
@@ -662,10 +661,11 @@
 						datalocale : "zh-US", //表格汉化
 						search : false, //显示搜索框
 						sidePagination : "server", //服务端处理分页
-						//height : tableHeight(), //高度调整
+						// height : tableHeight(), //高度调整
 						pagination : true, //是否分页
 						pageSize : 20, //单页记录数
-						pageList : [ 5, 10, 20, 50 ], //分页步进值
+						pageList : [ 10, 25, 50, 100 ], //分页步进值
+						smartDisplay : false,
 						sidePagination : "server", //服务端分页
 						contentType : "application/x-www-form-urlencoded", //请求数据内容格式 默认是 application/json 自己根据格式自行服务端处理
 						method : "post", //请求方式
