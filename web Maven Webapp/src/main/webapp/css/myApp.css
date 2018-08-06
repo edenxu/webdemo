@@ -29,6 +29,7 @@
 .searchColumn-border {
 	/* border: solid 1px #e4e4e4;
 	margin: 2px; */
+	
 }
 
 .searchColumn {
@@ -45,6 +46,7 @@
 
 .result-heading {
 	display: flex;
+	flex-direction: row-reverse;
 }
 
 .my-btn {
@@ -62,5 +64,5 @@
 	/* height: auto !important; */
 	height: 700px;
 	min-height: 700px;
-	overflow:auto;
+	overflow: auto;
 }
