@@ -68,8 +68,8 @@
 						<input type="text" id="myTableName" placeholder="给当前结果集起个别名" />
 						<button type="button" class="btn  btn-default btn-sm"
 							id="saveQueryPlanButton">
-							<span class="glyphicon glyphicon-save" onClick="saveQueryPlan()">
-								方案保存 </span>
+							<span class="glyphicon glyphicon-search"
+								onClick="saveQueryPlan()"> 方案保存 </span>
 						</button>
 						<br>
 						<div class="whereArea" id="whereArea"></div>
@@ -82,9 +82,10 @@
 					<div id="tabs4-1">
 						<div class="searchColumn-border">
 							<div class="result-heading">
-								<button type="button" class="btn  btn-default btn-sm">
-									<span class="glyphicon glyphicon-export" onClick="exportData()">
-										结果导出 </span>
+								<button type="button" class="btn btn-sm btn-export"
+									aria-label="Left Align" onClick="exportData()">
+									<span class="glyphicon glyphicon-export glyphicon-align-left"
+										aria-hidden="true"></span> 结果导出
 								</button>
 							</div>
 							<!-- /.panel-heading -->
@@ -121,7 +122,7 @@
 	<!-- Bootstrap Core JavaScript -->
 	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
 	<script src="js/bootstrap-table.js"></script>
-	<script src="js/bootstrap-table-zh-CN.min.js"></script>
+	<script src="js/bootstrap-table-zh-CN.min.js">
 	<script src="js/layer/layer.js"></script>
 	<script src="js/myTool.js"></script>
 	<script src="js/layer/layer.js"></script>
@@ -288,7 +289,7 @@
 					selectArray.push(data.ybzd);
 					let zdmc = "";
 					if (data.zjbz == 'Y') {
-						zdmc = data.zdmc + '【主键】';
+						zdmc = data.zdmc + '[Pk]';
 					} else {
 						zdmc = data.zdmc;
 					}
@@ -923,7 +924,7 @@
 				let filterColumn = $('#filterColumn').html();
 				// 如直接调用.html()方法无法获取到控件中已经填写的相关值，因此进行附加HTML信息中已经填写的值后再获取
 				$('#whereArea :input').each(function() {
-					//获取容器innerHTML要想包含输入的值，需要设置过value属性。其他对象重置selected、checked属性
+					///////////获取容器innerHTML要想包含输入的值，需要设置过value属性。其他对象重置selected、checked属性
 					switch (this.type) {
 					case 'text':
 						this.setAttribute('value', this.value);
